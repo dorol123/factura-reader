@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Fondo circular -->
+  <circle cx="100" cy="100" r="96" fill="#2c1a0e"/>
+  <circle cx="100" cy="100" r="90" fill="#3d2410"/>
+
+  <!-- Documento / factura -->
+  <rect x="62" y="44" width="68" height="88" rx="6" fill="#f5f0e8"/>
+  <rect x="62" y="44" width="68" height="14" rx="6" fill="#4a7c59"/>
+  <rect x="62" y="51" width="68" height="7" fill="#4a7c59"/>
+
+  <!-- Líneas del documento -->
+  <rect x="72" y="68" width="40" height="4" rx="2" fill="#d9c9b0"/>
+  <rect x="72" y="78" width="48" height="4" rx="2" fill="#d9c9b0"/>
+  <rect x="72" y="88" width="32" height="4" rx="2" fill="#d9c9b0"/>
+  <rect x="72" y="98" width="44" height="4" rx="2" fill="#d9c9b0"/>
+
+  <!-- Línea total -->
+  <rect x="72" y="112" width="48" height="1.5" rx="1" fill="#a0724a"/>
+  <rect x="72" y="118" width="28" height="5" rx="2" fill="#2d4a2d"/>
+  <rect x="104" y="118" width="16" height="5" rx="2" fill="#2d4a2d"/>
+
+  <!-- Taza de café -->
+  <ellipse cx="118" cy="148" rx="28" ry="6" fill="#1a0f07" opacity="0.4"/>
+  <path d="M90 122 Q90 148 100 152 Q108 155 118 152 Q128 149 130 140 L130 122 Z" fill="#5c3d1e"/>
+  <path d="M92 122 Q92 146 100 150 Q108 153 118 150 Q126 147 128 140 L128 122 Z" fill="#7ab893" opacity="0.15"/>
+
+  <!-- Asa de la taza -->
+  <path d="M130 128 Q145 128 145 136 Q145 144 130 144" fill="none" stroke="#5c3d1e" stroke-width="5" stroke-linecap="round"/>
+  <path d="M130 128 Q143 128 143 136 Q143 143 130 143" fill="none" stroke="#7a4a22" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Vapor -->
+  <path d="M104 116 Q106 110 104 104" fill="none" stroke="#f5f0e8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M112 114 Q114 108 112 102" fill="none" stroke="#f5f0e8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M120 116 Q122 110 120 104" fill="none" stroke="#f5f0e8" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+
+</svg>

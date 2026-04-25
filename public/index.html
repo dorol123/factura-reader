@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factura Reader</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+</head>
+<body>
+
+  <!-- Login overlay -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-logo">☕</div>
+      <h2>Factura<span>Reader</span></h2>
+      <p>Ingresá la contraseña para continuar</p>
+      <input type="password" id="login-input" class="login-input" placeholder="••••••" onkeydown="if(event.key==='Enter') loginCheck()">
+      <button onclick="loginCheck()" class="btn-login">Entrar</button>
+      <p id="login-error" class="login-error"></p>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- Izquierda: Scanner -->
+    <div class="panel-left">
+      <div class="brand">
+        <img src="logo.svg" alt="Logo" class="brand-logo">
+        <h1>Factura<span>Reader</span></h1>
+      </div>
+
+      <div class="tabs">
+        <button class="tab" onclick="showTab('archivo')">PDF</button>
+        <button class="tab" onclick="showTab('camara')">Cámara</button>
+      </div>
+
+      <!-- Tab PDF (default) -->
+      <div id="tab-archivo" class="tab-content">
+        <div class="upload-area" id="drop-zone" onclick="document.getElementById('input-archivo').click()">
+          <div class="upload-icon">📄</div>
+          <p>Clic o arrastrá un PDF o imagen</p>
+          <input type="file" id="input-archivo" accept=".pdf,image/*" style="display:none" onchange="archivoSeleccionado(event)">
+        </div>
+        <div class="archivo-row">
+          <p id="nombre-archivo"></p>
+          <button id="btn-preview-archivo" onclick="previsualizarArchivo()" style="display:none" class="btn-preview-file">👁️ Ver</button>
+        </div>
+        <div class="input-nombre-wrap" id="nombre-wrap-archivo" style="display:none">
+          <label class="nombre-label">¿Nombrar factura? <span>(opcional)</span></label>
+          <input type="text" id="input-nombre-archivo" placeholder="Ej: Proveedor ABC" maxlength="40" class="input-nombre">
+        </div>
+        <button id="btn-analizar-archivo" onclick="analizarArchivo()" style="display:none" class="btn-primary">Analizar</button>
+      </div>
+
+      <!-- Tab Cámara -->
+      <div id="tab-camara" class="tab-content" style="display:none">
+        <div class="camera-wrap">
+          <video id="video" autoplay playsinline></video>
+          <canvas id="canvas" style="display:none"></canvas>
+        </div>
+        <div class="camera-controls">
+          <button id="btn-camara" onclick="iniciarCamara()">Activar</button>
+          <button id="btn-foto" onclick="tomarFoto()" disabled>Foto</button>
+        </div>
+        <img id="preview-foto" style="display:none" alt="Vista previa">
+        <div class="input-nombre-wrap" id="nombre-wrap-foto" style="display:none">
+          <label class="nombre-label">¿Nombrar factura? <span>(opcional)</span></label>
+          <input type="text" id="input-nombre-foto" placeholder="Ej: Proveedor ABC" maxlength="40" class="input-nombre">
+        </div>
+        <button id="btn-analizar-foto" onclick="analizarFoto()" style="display:none" class="btn-primary">Analizar</button>
+      </div>
+
+      <!-- Loader -->
+      <div id="loader" style="display:none">
+        <div class="spinner"></div>
+        <p>Procesando...</p>
+      </div>
+
+      <button onclick="abrirMisFacturas()" class="btn-mis-facturas">📋 Mis facturas</button>
+    </div>
+
+    <!-- Centro: Productos -->
+    <div class="panel-center">
+      <div class="productos-header">
+        <h2>Productos</h2>
+      </div>
+      <div id="lista-productos-wrap">
+        <div class="empty-msg">
+          <span>📋</span>
+          <p>Cargá una factura para ver los productos acá</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Derecha: Importe total -->
+    <div class="panel-right">
+      <h2>Resumen</h2>
+      <div class="resumen-box">
+        <div class="resumen-row">
+          <span>Facturas</span>
+          <span id="cant-facturas">0</span>
+        </div>
+        <div class="resumen-row">
+          <span>Productos</span>
+          <span id="cant-productos">0</span>
+        </div>
+        <div class="resumen-divider"></div>
+        <div class="importe-total">
+          <span>Importe Total</span>
+          <span id="total-general">$0,00</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Overlay cámara fullscreen (móvil) -->
+  <div id="camara-overlay" class="camara-overlay" style="display:none">
+    <video id="video-fullscreen" autoplay playsinline></video>
+    <div class="overlay-controls">
+      <button class="overlay-btn overlay-cerrar" onclick="cerrarCamaraFullscreen()">✕</button>
+      <button class="overlay-btn overlay-capturar" onclick="capturarFullscreen()">📷</button>
+    </div>
+  </div>
+
+  <!-- Overlay recorte -->
+  <div id="crop-overlay" class="crop-overlay" style="display:none">
+    <div class="crop-header">
+      <p>Ajustá el recorte para incluir solo los productos</p>
+    </div>
+    <div class="crop-container">
+      <img id="crop-image" alt="Recortar">
+    </div>
+    <div class="crop-controls">
+      <button class="btn-crop-cancel" onclick="cancelarRecorte()">✕ Cancelar</button>
+      <button class="btn-crop-confirm" onclick="confirmarRecorte()">✓ Confirmar</button>
+    </div>
+  </div>
+
+  <!-- Modal Mis Facturas -->
+  <div id="modal-facturas" class="modal-facturas" style="display:none">
+    <div class="modal-facturas-box">
+      <div class="modal-facturas-header">
+        <h3>📋 Mis Facturas</h3>
+        <button onclick="cerrarMisFacturas()" class="btn-modal-cerrar">✕</button>
+      </div>
+      <div id="lista-mis-facturas"></div>
+    </div>
+  </div>
+
+  <!-- Modal Ver Factura -->
+  <div id="modal-ver-factura" class="modal-ver-factura" style="display:none">
+    <div class="modal-ver-factura-box">
+      <div class="modal-ver-header">
+        <h3 id="ver-factura-titulo">Factura</h3>
+        <button onclick="cerrarVerFactura()" class="btn-modal-cerrar">✕</button>
+      </div>
+      <div id="ver-factura-contenido" class="ver-factura-contenido"></div>
+    </div>
+  </div>
+
+  <div id="version-badge">Última actualización: <span id="hora-carga"></span></div>
+
+  <!-- Toast duplicado -->
+  <div id="toast-duplicado" class="toast-warning">
+    ⚠️ Quizás estás subiendo la misma factura por segunda vez
+  </div>
+
+  <!-- Coffee bar -->
+  <div id="coffee-bar">
+    <div class="coffee-bar-inner" id="coffee-icons"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

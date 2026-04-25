@@ -1,0 +1,24 @@
+{
+  "total_keywords": ["importe total", "total igv", "total a pagar", "monto total", "gran total", "precio venta", "op. gravada", "op.gravada"],
+  "skip_keywords": [
+    "cuit", "cbu", "cbu", "ruc", "telefono", "tel:", "email", "fecha",
+    "domicilio", "direccion", "pagina", "página",
+    "numero", "número", "condicion", "condición",
+    "cliente", "razon social", "razón social", "vencimiento",
+    "nombre", "apellido", "señor", "señora", "sr.", "sra.",
+    "localidad", "provincia", "cod. postal", "codigo postal",
+    "responsable", "monotributo", "inscripto", "inicio de actividad",
+    "vendedor", "orden de compra", "forma de pago", "cond. pago",
+    "observaciones", "banco", "cuenta", "alias",
+    "mercadopago", "mercado pago", "transferencia",
+    "lista de precios", "precio de lista",
+    "entrega", "recepcion",
+    "descripcion", "descripción", "precio unit", "cantidad.",
+    "son:", "representacion", "autorizado", "mifact",
+    "fecha emision", "fec. vencimiento", "guia", "u.m",
+    "av.", "avenida", "calle", "jr.", "telf", "telf:"
+  ],
+  "price_pattern": "\\$?\\s*(\\d{1,3}(?:[.,]\\d{3})*[.,]\\d{2}|\\d+[.,]\\d{2}|\\d{1,6})\\s*$",
+  "min_price": 1.0,
+  "min_name_length": 3
+}
