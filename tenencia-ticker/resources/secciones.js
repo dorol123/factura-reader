@@ -12,7 +12,8 @@
       tab.classList.toggle('activa', tab.dataset.seccion === seccion);
       tab.setAttribute('aria-current', tab.dataset.seccion === seccion ? 'page' : 'false');
     });
-    document.getElementById('acciones-tenencia').hidden = seccion !== 'tenencia';
+    // El Excel de tenencia sirve para las dos secciones de tenencia
+    document.getElementById('acciones-tenencia').hidden = !['tenencia', 'clientes'].includes(seccion);
     try { localStorage.setItem(CLAVE, seccion); } catch (err) { /* sin almacenamiento */ }
   }
 

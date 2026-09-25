@@ -19,6 +19,7 @@
 
     <nav class="secciones" aria-label="Secciones">
       <button type="button" class="seccion-tab" data-seccion="tenencia">Tenencia por ticker</button>
+      <button type="button" class="seccion-tab" data-seccion="clientes">Tenencia por cliente</button>
       <button type="button" class="seccion-tab" data-seccion="acreditaciones">Acreditaciones</button>
     </nav>
 
@@ -84,6 +85,58 @@
                 </tr>
               </thead>
               <tbody id="tabla-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ══════════ Tenencia por cliente (mismo Excel que Tenencia por ticker) ══════════ -->
+  <div class="seccion" id="seccion-clientes" hidden>
+
+    <main class="vacio" id="cli-vacia">
+      <div class="drop" id="cli-drop">
+        <p class="drop-titulo">Cargá el Excel de Tenencia por Ticker</p>
+        <p class="drop-sub">Es el mismo archivo de la sección Tenencia por ticker: con cargarlo una vez alcanza para las dos.</p>
+        <p class="drop-sub">Arrastralo acá o hacé clic para elegirlo. Los datos se guardan sólo en esta PC.</p>
+      </div>
+    </main>
+
+    <main class="principal" id="cli-datos" hidden>
+      <aside class="tickers">
+        <div class="tickers-controles">
+          <input type="search" id="buscar-cliente" placeholder="Buscar cliente o comitente…" autocomplete="off">
+          <p class="cli-orden-nota">Ordenados por AUM, de mayor a menor</p>
+        </div>
+        <ul id="lista-clientes"></ul>
+      </aside>
+
+      <section class="detalle">
+        <div class="detalle-vacio" id="cli-detalle-vacio">Elegí un cliente de la lista</div>
+        <div id="cli-detalle" hidden>
+          <div class="detalle-head">
+            <div>
+              <h2 id="cli-nombre"></h2>
+              <p id="cli-sub"></p>
+            </div>
+            <div class="resumen">
+              <div><span id="cli-tickers"></span><small>tickers</small></div>
+              <div><span id="cli-aum"></span><small>AUM total</small></div>
+            </div>
+          </div>
+          <div class="tabla-wrap">
+            <table class="tabla-tenencia tabla-cliente">
+              <thead>
+                <tr>
+                  <th data-orden-cli="ticker">Ticker</th>
+                  <th data-orden-cli="instrumento">Instrumento</th>
+                  <th data-orden-cli="nominales" class="num">Nominales</th>
+                  <th data-orden-cli="tenencia" class="num">Valor (USD)</th>
+                  <th class="num sin-orden">% cartera</th>
+                </tr>
+              </thead>
+              <tbody id="cli-tabla-body"></tbody>
             </table>
           </div>
         </div>

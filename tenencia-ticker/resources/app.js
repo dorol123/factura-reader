@@ -7,6 +7,8 @@
 let datos = null;          // { archivo, fechaCarga, filas: [...] }
 let tickerActual = null;
 let orden = { campo: 'nominales', desc: true };
+let clienteActual = null;
+let ordenCliente = { campo: 'tenencia', desc: true };
 
 const $ = (id) => document.getElementById(id);
 
@@ -89,6 +91,7 @@ async function cargarArchivo(file) {
     await Storage.guardar(nuevos);
     datos = nuevos;
     tickerActual = null;
+    clienteActual = null;
     render();
   } catch (err) {
     console.error(err);
@@ -142,18 +145,126 @@ function clientesDeTicker(ticker) {
   return [...mapa.values()];
 }
 
+// Clientes con su AUM (suma de la tenencia de todas sus posiciones, incluidos los saldos)
+function resumenClientes() {
+  const mapa = new Map();
+  for (const r of datos.filas) {
+    let c = mapa.get(r.comitente);
+    if (!c) {
+      c = { comitente: r.comitente, cuenta: r.cuenta, aum: 0, tickers: new Set(), perfil: r.original?.['Perfil de Inversor'] || '' };
+      mapa.set(r.comitente, c);
+    }
+    c.aum += tenenciaDe(r);
+    c.tickers.add(r.ticker);
+  }
+  return [...mapa.values()].sort((a, b) => b.aum - a.aum || a.cuenta.localeCompare(b.cuenta, 'es'));
+}
+
+// Posiciones de un cliente, sumando las filas repetidas del mismo ticker
+function posicionesDeCliente(comitente) {
+  const mapa = new Map();
+  for (const r of datos.filas) {
+    if (r.comitente !== comitente) continue;
+    const p = mapa.get(r.ticker);
+    if (p) {
+      p.nominales += r.nominales;
+      p.tenencia += tenenciaDe(r);
+    } else {
+      mapa.set(r.ticker, { ticker: r.ticker, instrumento: r.instrumento, nominales: r.nominales, tenencia: tenenciaDe(r) });
+    }
+  }
+  return [...mapa.values()];
+}
+
 // ── Render ──
 
 function render() {
   const hayDatos = !!datos;
   $('vista-vacia').hidden = hayDatos;
   $('vista-datos').hidden = !hayDatos;
+  $('cli-vacia').hidden = hayDatos;
+  $('cli-datos').hidden = !hayDatos;
   $('estado').textContent = hayDatos
     ? `${datos.archivo} · cargado ${fmtFecha.format(new Date(datos.fechaCarga))} · ${datos.filas.length} filas`
     : 'Sin datos cargados';
   if (!hayDatos) return;
   renderTickers();
   renderDetalle();
+  renderClientes();
+  renderDetalleCliente();
+}
+
+function renderClientes() {
+  const filtro = normalizar($('buscar-cliente').value);
+  const lista = $('lista-clientes');
+  lista.innerHTML = '';
+  resumenClientes().forEach((c, i) => {
+    if (filtro && !normalizar(c.cuenta).includes(filtro) && !normalizar(c.comitente).includes(filtro)) return;
+    const li = document.createElement('li');
+    li.className = c.comitente === clienteActual ? 'activo' : '';
+    li.innerHTML = `
+      <div class="t-fila"><strong><span class="c-pos"></span><span class="c-nombre"></span></strong><span class="t-aum"></span></div>
+      <div class="t-fila"><span class="t-instr"></span><span class="t-cant"></span></div>`;
+    li.querySelector('.c-pos').textContent = `${i + 1}.`;
+    li.querySelector('.c-nombre').textContent = c.cuenta;
+    li.querySelector('.t-aum').textContent = 'USD ' + fmtEntero.format(c.aum);
+    li.querySelector('.t-instr').textContent = `Comitente ${c.comitente}`;
+    li.querySelector('.t-cant').textContent = c.tickers.size === 1 ? '1 ticker' : `${c.tickers.size} tickers`;
+    li.title = `${c.cuenta} — comitente ${c.comitente} (USD ${fmtUsd.format(c.aum)})`;
+    li.addEventListener('click', () => {
+      clienteActual = c.comitente;
+      renderClientes();
+      renderDetalleCliente();
+    });
+    lista.appendChild(li);
+  });
+  if (!lista.children.length) {
+    lista.innerHTML = '<li class="sin-resultados">Sin resultados</li>';
+  }
+}
+
+function renderDetalleCliente() {
+  const posiciones = clienteActual ? posicionesDeCliente(clienteActual) : [];
+  $('cli-detalle-vacio').hidden = posiciones.length > 0;
+  $('cli-detalle').hidden = posiciones.length === 0;
+  if (!posiciones.length) return;
+
+  const cliente = resumenClientes().find(c => c.comitente === clienteActual);
+  $('cli-nombre').textContent = cliente.cuenta;
+  $('cli-sub').textContent = [`Comitente ${cliente.comitente}`, cliente.perfil && `Perfil ${cliente.perfil}`].filter(Boolean).join(' · ');
+  $('cli-tickers').textContent = posiciones.length;
+  $('cli-aum').textContent = 'USD ' + fmtUsd.format(cliente.aum);
+
+  const { campo, desc } = ordenCliente;
+  posiciones.sort((a, b) => {
+    const cmp = (campo === 'nominales' || campo === 'tenencia')
+      ? a[campo] - b[campo]
+      : String(a[campo]).localeCompare(String(b[campo]), 'es', { numeric: true });
+    return desc ? -cmp : cmp;
+  });
+
+  const fmtPct = new Intl.NumberFormat('es-AR', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const body = $('cli-tabla-body');
+  body.innerHTML = '';
+  for (const p of posiciones) {
+    const tr = document.createElement('tr');
+    const pct = cliente.aum ? p.tenencia / cliente.aum : 0;
+    for (const [valor, clase] of [
+      [p.ticker, 'c-ticker'], [p.instrumento, ''], [fmtNum.format(p.nominales), 'num'],
+      [fmtUsd.format(p.tenencia), 'num'], [fmtPct.format(pct), 'num c-pct']
+    ]) {
+      const td = document.createElement('td');
+      td.textContent = valor;
+      if (clase) td.className = clase;
+      tr.appendChild(td);
+    }
+    body.appendChild(tr);
+  }
+
+  document.querySelectorAll('th[data-orden-cli]').forEach(th => {
+    th.classList.toggle('orden-asc', th.dataset.ordenCli === campo && !desc);
+    th.classList.toggle('orden-desc', th.dataset.ordenCli === campo && desc);
+  });
 }
 
 function renderTickers() {
@@ -230,28 +341,40 @@ function initEventos() {
   const input = $('input-excel');
   $('btn-cargar').addEventListener('click', () => input.click());
   $('drop').addEventListener('click', () => input.click());
+  $('cli-drop').addEventListener('click', () => input.click());
   input.addEventListener('change', () => {
     if (input.files[0]) cargarArchivo(input.files[0]);
     input.value = '';
   });
 
   // Arrastrar y soltar en cualquier parte de la ventana (sólo con esta sección abierta)
-  const enTenencia = () => document.body.dataset.seccion === 'tenencia';
+  const enTenencia = () => ['tenencia', 'clientes'].includes(document.body.dataset.seccion);
+  const zonas = () => [$('drop'), $('cli-drop')];
   document.addEventListener('dragover', e => {
     e.preventDefault();
-    if (enTenencia()) $('drop').classList.add('encima');
+    if (enTenencia()) zonas().forEach(z => z.classList.add('encima'));
   });
   document.addEventListener('dragleave', e => {
-    if (!e.relatedTarget) $('drop').classList.remove('encima');
+    if (!e.relatedTarget) zonas().forEach(z => z.classList.remove('encima'));
   });
   document.addEventListener('drop', e => {
     e.preventDefault();
-    $('drop').classList.remove('encima');
+    zonas().forEach(z => z.classList.remove('encima'));
     const file = e.dataTransfer.files[0];
     if (file && enTenencia()) cargarArchivo(file);
   });
 
   $('buscar-ticker').addEventListener('input', renderTickers);
+  $('buscar-cliente').addEventListener('input', renderClientes);
+
+  document.querySelectorAll('th[data-orden-cli]').forEach(th => {
+    th.addEventListener('click', () => {
+      const campo = th.dataset.ordenCli;
+      const numerico = campo === 'nominales' || campo === 'tenencia';
+      ordenCliente = { campo, desc: ordenCliente.campo === campo ? !ordenCliente.desc : numerico };
+      renderDetalleCliente();
+    });
+  });
   $('orden-tickers').addEventListener('change', renderTickers);
 
   document.querySelectorAll('th[data-orden]').forEach(th => {

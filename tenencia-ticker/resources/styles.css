@@ -593,3 +593,29 @@ body {
   color: #0a2f6b;
   font: 700 16px 'Segoe UI', system-ui, sans-serif;
 }
+
+/* ── Tenencia por cliente ── */
+
+.cli-orden-nota {
+  color: var(--tenue);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.c-pos {
+  display: inline-block;
+  min-width: 2.1em;
+  color: var(--tenue);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.tickers li strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.tabla-cliente td.c-ticker { font-weight: 600; color: var(--marca); }
+.tabla-cliente td:nth-child(2) { color: var(--suave); font-variant-numeric: normal; }
+.tabla-cliente td:last-child { font-weight: 400; color: var(--suave); }
+.tabla-cliente td:nth-child(4) { font-weight: 600; }
+.tabla-tenencia th.sin-orden { cursor: default; }
+.tabla-tenencia th.sin-orden:hover { color: var(--tenue); }

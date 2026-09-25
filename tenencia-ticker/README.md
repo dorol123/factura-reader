@@ -3,6 +3,8 @@
 App de escritorio portable para Windows con dos secciones:
 
 - **Tenencia por ticker**: elegís un ticker y muestra qué clientes lo tienen (nombre, comitente, nominales y valor en USD).
+- **Tenencia por cliente**: con el mismo Excel, lista los clientes ordenados por AUM y muestra las posiciones de cada uno
+  (ticker, nominales, valor en USD y % de su cartera).
 - **Acreditaciones**: procesa el Excel de acreditaciones (el mismo motor del Procesador de Acreditaciones):
   filtra por rango de fecha/hora, separa Pesos y Dólares, resalta importes altos, copia la tabla como imagen
   para WhatsApp y guarda el Excel procesado.
