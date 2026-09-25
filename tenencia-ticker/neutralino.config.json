@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
-  "applicationId": "com.fbviale.tenenciaticker",
+  "applicationId": "com.fbviale.valiu",
   "version": "1.0.0",
   "defaultMode": "window",
   "port": 0,
@@ -21,7 +21,7 @@
   "globalVariables": {},
   "modes": {
     "window": {
-      "title": "Tenencia por Ticker",
+      "title": "Valiu",
       "width": 1100,
       "height": 750,
       "minWidth": 700,
@@ -39,7 +39,7 @@
     }
   },
   "cli": {
-    "binaryName": "TenenciaTicker",
+    "binaryName": "Valiu",
     "resourcesPath": "/resources/",
     "extensionsPath": "/extensions/",
     "clientLibrary": "/resources/js/neutralino.js",
