@@ -4,7 +4,8 @@
 
 // ── Estado ──
 
-let datos = null;          // { archivo, fechaCarga, filas: [...] }
+let cargas = [];           // historial: [{ id, archivo, fechaCarga, filas: [...] }]
+let datos = null;          // la carga que se muestra: siempre la última
 let tickerActual = null;
 let orden = { campo: 'nominales', desc: true };
 let clienteActual = null;
@@ -83,16 +84,53 @@ function leerExcel(buffer, nombreArchivo) {
   return { archivo: nombreArchivo, fechaCarga: new Date().toISOString(), filas: registros };
 }
 
+// ── Historial de cargas ──
+// Se guardan todas las cargas; para mostrar datos se usa sólo la más reciente.
+
+function ultimaCarga() {
+  return cargas.reduce((ultima, c) => (!ultima || c.fechaCarga > ultima.fechaCarga ? c : ultima), null);
+}
+
+// Versiones anteriores guardaban una sola carga sin historial
+function leerHistorial(guardado) {
+  if (!guardado) return [];
+  if (Array.isArray(guardado.cargas)) return guardado.cargas;
+  if (Array.isArray(guardado.filas)) return [{ id: guardado.fechaCarga, ...guardado }];
+  return [];
+}
+
+async function guardarHistorial() {
+  await Storage.guardar({ version: 2, cargas });
+}
+
+function usarUltimaCarga() {
+  const anterior = datos;
+  datos = ultimaCarga();
+  if (datos !== anterior) {
+    tickerActual = null;
+    clienteActual = null;
+  }
+}
+
+async function borrarCarga(id) {
+  cargas = cargas.filter(c => c.id !== id);
+  await guardarHistorial();
+  usarUltimaCarga();
+  render();
+  renderCargas();
+}
+
 async function cargarArchivo(file) {
   $('error').textContent = '';
   try {
     const buffer = await file.arrayBuffer();
-    const nuevos = leerExcel(buffer, file.name);
-    await Storage.guardar(nuevos);
-    datos = nuevos;
-    tickerActual = null;
-    clienteActual = null;
+    const nueva = leerExcel(buffer, file.name);
+    nueva.id = nueva.fechaCarga;
+    cargas.push(nueva);
+    await guardarHistorial();
+    usarUltimaCarga();
     render();
+    renderCargas();
   } catch (err) {
     console.error(err);
     const msg = 'No se pudo cargar el archivo: ' + err.message;
@@ -185,7 +223,7 @@ function render() {
   $('cli-vacia').hidden = hayDatos;
   $('cli-datos').hidden = !hayDatos;
   $('estado').textContent = hayDatos
-    ? `${datos.archivo} · cargado ${fmtFecha.format(new Date(datos.fechaCarga))} · ${datos.filas.length} filas`
+    ? `${datos.archivo} · cargado ${fmtFecha.format(new Date(datos.fechaCarga))} · ${datos.filas.length} ${datos.filas.length === 1 ? 'fila' : 'filas'}`
     : 'Sin datos cargados';
   if (!hayDatos) return;
   renderTickers();
@@ -423,11 +461,64 @@ function irACliente(comitente) {
   mostrarSeleccionado('lista-clientes');
 }
 
+// ── Ventana "Borrar datos" ──
+
+function renderCargas() {
+  const lista = $('lista-cargas');
+  if (!lista) return;
+  lista.innerHTML = '';
+  const activa = ultimaCarga();
+  const ordenadas = [...cargas].sort((a, b) => (a.fechaCarga < b.fechaCarga ? 1 : -1));
+  $('cargas-vacio').hidden = ordenadas.length > 0;
+  for (const c of ordenadas) {
+    const li = document.createElement('li');
+    li.className = 'carga' + (c === activa ? ' en-uso' : '');
+    li.innerHTML = `
+      <div class="carga-info">
+        <div class="carga-archivo"><span></span></div>
+        <div class="carga-detalle"></div>
+      </div>
+      <div class="carga-acciones">
+        <button type="button" class="btn-borrar">Borrar</button>
+      </div>`;
+    li.querySelector('.carga-archivo span').textContent = c.archivo;
+    if (c === activa) {
+      const chip = document.createElement('em');
+      chip.className = 'chip-uso';
+      chip.textContent = 'En uso';
+      li.querySelector('.carga-archivo').appendChild(chip);
+    }
+    li.querySelector('.carga-detalle').textContent =
+      `Cargado el ${fmtFecha.format(new Date(c.fechaCarga))} · ${fmtEntero.format(c.filas.length)} ${c.filas.length === 1 ? 'fila' : 'filas'}`;
+
+    // Confirmación dentro de la misma fila
+    const acciones = li.querySelector('.carga-acciones');
+    li.querySelector('.btn-borrar').addEventListener('click', () => {
+      acciones.innerHTML = '<span class="carga-seguro">¿Borrar?</span>'
+        + '<button type="button" class="btn-borrar confirmar">Sí, borrar</button>'
+        + '<button type="button" class="btn-cancelar">No</button>';
+      acciones.querySelector('.confirmar').addEventListener('click', () => borrarCarga(c.id));
+      acciones.querySelector('.btn-cancelar').addEventListener('click', renderCargas);
+    });
+    lista.appendChild(li);
+  }
+}
+
+function abrirCargas() {
+  renderCargas();
+  $('dialogo-cargas').showModal();
+}
+
 // ── Eventos ──
 
 function initEventos() {
   const input = $('input-excel');
   $('btn-cargar').addEventListener('click', () => input.click());
+  $('btn-borrar-datos').addEventListener('click', abrirCargas);
+  $('cerrar-cargas').addEventListener('click', () => $('dialogo-cargas').close());
+  $('dialogo-cargas').addEventListener('click', e => {
+    if (e.target === $('dialogo-cargas')) $('dialogo-cargas').close();
+  });
   $('drop').addEventListener('click', () => input.click());
   $('cli-drop').addEventListener('click', () => input.click());
   input.addEventListener('change', () => {
@@ -482,7 +573,8 @@ async function iniciar() {
     Neutralino.events.on('windowClose', () => Neutralino.app.exit());
   }
   initEventos();
-  datos = await Storage.leer();
+  cargas = leerHistorial(await Storage.leer());
+  usarUltimaCarga();
   render();
 }
 

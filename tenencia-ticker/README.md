@@ -24,7 +24,8 @@ App de escritorio portable para Windows con dos secciones:
 Acreditaciones: cargá el Excel, elegí el rango (o un atajo: 10 a 13, 13 a 16, 16 del día hábil anterior a 10),
 revisá la vista previa y usá *Copiar imagen* o *Descargar Excel procesado*. Estos archivos no se guardan en la app.
 
-Al volver a abrir la app, los últimos datos cargados ya están. Cargar un Excel nuevo reemplaza al anterior.
+Al volver a abrir la app, los últimos datos cargados ya están. Cada Excel que cargás queda en un historial y la app
+muestra siempre el último; con *Borrar datos* ves todas las cargas (archivo, fecha y hora) y podés borrar cualquiera.
 
 La primera vez Windows puede mostrar *"Windows protegió su PC"* porque el `.exe` no está firmado:
 *Más información → Ejecutar de todas formas*.

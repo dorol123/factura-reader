@@ -706,3 +706,126 @@ body {
 
 .btn-copiar:hover { color: var(--marca); border-color: var(--marca-linea); background: var(--marca-suave); }
 .btn-copiar.copiado { color: #1a7f4b; border-color: #9fd7b8; background: #eaf7ef; }
+
+/* ── Borrar datos: botón y ventana con el historial de cargas ── */
+
+.btn-borde {
+  flex: none;
+  white-space: nowrap;
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-borde:hover { border-color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+.dialogo {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(600px, calc(100vh - 64px));
+  margin: auto;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--texto);
+  box-shadow: 0 24px 60px rgba(10, 47, 107, 0.25);
+}
+
+.dialogo[open] { display: flex; flex-direction: column; }
+.dialogo::backdrop { background: rgba(15, 28, 46, 0.45); }
+
+.dialogo-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.dialogo-head h3 {
+  font-family: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--marca);
+}
+
+.dialogo-head p { margin-top: 4px; color: var(--suave); font-size: 13px; }
+
+.dialogo-cerrar {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--tenue);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dialogo-cerrar:hover { background: var(--fondo); color: var(--texto); }
+
+.lista-cargas { list-style: none; overflow-y: auto; }
+
+.carga {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--fondo);
+}
+
+.carga:last-child { border-bottom: none; }
+.carga.en-uso { background: var(--marca-suave); }
+
+.carga-info { min-width: 0; }
+
+.carga-archivo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.carga-archivo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.chip-uso {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--marca);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.carga-detalle { margin-top: 2px; color: var(--suave); font-size: 12px; }
+
+.carga-acciones { display: flex; align-items: center; gap: 8px; flex: none; }
+.carga-seguro { color: var(--error); font-size: 12px; font-weight: 600; }
+
+.btn-borrar, .btn-cancelar {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-borrar { background: var(--panel); border: 1px solid #f0c5c1; color: var(--error); }
+.btn-borrar:hover { background: #fdf1f0; border-color: var(--error); }
+.btn-borrar.confirmar { background: var(--error); border-color: var(--error); color: #fff; }
+.btn-cancelar { background: var(--panel); border: 1px solid var(--borde); color: var(--suave); }
+.btn-cancelar:hover { color: var(--texto); }
+
+.cargas-vacio { padding: 28px 22px; color: var(--tenue); text-align: center; }

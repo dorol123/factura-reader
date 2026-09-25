@@ -26,6 +26,7 @@
     <div class="acciones-tenencia" id="acciones-tenencia">
       <div class="estado" id="estado">Sin datos cargados</div>
       <a class="link-datos" href="https://app.powerbi.com/groups/me/apps/8023a337-6088-4fcc-a0a5-3423db1838a7/reports/03c5319d-9f1e-44d4-b31c-57d11aa4ae8b/fa0646621dacd719ca0d?experience=power-bi" target="_blank" rel="noopener" data-externo>Descargar datos acá</a>
+      <button class="btn-borde" id="btn-borrar-datos">Borrar datos</button>
       <button class="btn" id="btn-cargar">Cargar Excel</button>
       <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" hidden>
     </div>
@@ -209,6 +210,19 @@
       </section>
     </main>
   </div>
+
+  <!-- Historial de cargas del Excel de tenencia -->
+  <dialog class="dialogo" id="dialogo-cargas" aria-labelledby="titulo-cargas">
+    <div class="dialogo-head">
+      <div>
+        <h3 id="titulo-cargas">Cargas guardadas</h3>
+        <p>Valiu muestra siempre la última carga. Los datos están sólo en esta PC.</p>
+      </div>
+      <button type="button" class="dialogo-cerrar" id="cerrar-cargas" aria-label="Cerrar">×</button>
+    </div>
+    <ul class="lista-cargas" id="lista-cargas"></ul>
+    <p class="cargas-vacio" id="cargas-vacio" hidden>No hay cargas guardadas.</p>
+  </dialog>
 
   <script src="lib/xlsx.full.min.js"></script>
   <script src="lib/jszip.min.js"></script>
