@@ -7,7 +7,7 @@
 let cargas = [];           // historial: [{ id, archivo, fechaCarga, filas: [...] }]
 let datos = null;          // la carga que se muestra: siempre la última
 let tickerActual = null;
-let orden = { campo: 'nominales', desc: true };
+let orden = { campo: 'tenencia', desc: true };
 let clienteActual = null;
 let ordenCliente = { campo: 'tenencia', desc: true };
 let config = {};           // { asesor: nombre del asesor o TODOS }
@@ -108,6 +108,13 @@ function asesoresDisponibles() {
   return [...conteo.entries()]
     .map(([nombre, comitentes]) => ({ nombre, clientes: comitentes.size }))
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+}
+
+// Días de tenencia del Excel (columna "Días de tenencia"); null si no viene
+function diasDe(r) {
+  const valor = r.original?.['Días de tenencia'];
+  const n = Number(valor);
+  return valor == null || valor === '' || !Number.isFinite(n) ? null : n;
 }
 
 function viendoTodos() {
@@ -329,9 +336,10 @@ function posicionesDeCliente(comitente) {
     const p = mapa.get(r.ticker);
     if (p) {
       p.nominales += r.nominales;
+      p.dias = Math.max(p.dias ?? 0, diasDe(r) ?? 0) || p.dias;
       p.tenencia += tenenciaDe(r);
     } else {
-      mapa.set(r.ticker, { ticker: r.ticker, instrumento: r.instrumento, nominales: r.nominales, tenencia: tenenciaDe(r) });
+      mapa.set(r.ticker, { ticker: r.ticker, instrumento: r.instrumento, nominales: r.nominales, tenencia: tenenciaDe(r), dias: diasDe(r) });
     }
   }
   return [...mapa.values()];
@@ -409,8 +417,8 @@ function renderDetalleCliente() {
 
   const { campo, desc } = ordenCliente;
   posiciones.sort((a, b) => {
-    const cmp = (campo === 'nominales' || campo === 'tenencia')
-      ? a[campo] - b[campo]
+    const cmp = (campo === 'dias' || campo === 'tenencia')
+      ? (a[campo] ?? -1) - (b[campo] ?? -1)
       : String(a[campo]).localeCompare(String(b[campo]), 'es', { numeric: true });
     return desc ? -cmp : cmp;
   });
@@ -423,7 +431,7 @@ function renderDetalleCliente() {
     const pct = cliente.aum ? p.tenencia / cliente.aum : 0;
     tr.appendChild(celdaEnlace(p.ticker, `Ver todos los clientes con ${p.ticker}`, () => irATicker(p.ticker), 'c-ticker'));
     for (const [valor, clase] of [
-      [p.instrumento, ''], [fmtNum.format(p.nominales), 'num'],
+      [p.instrumento, ''], [p.dias == null ? '—' : fmtEntero.format(p.dias), 'num'],
       [fmtUsd.format(p.tenencia), 'num'], [fmtPct.format(pct), 'num c-pct']
     ]) {
       const td = document.createElement('td');
@@ -478,12 +486,11 @@ function renderDetalle() {
   $('det-ticker').textContent = tickerActual;
   $('det-instrumento').textContent = [info.instrumento, info.tipo].filter(Boolean).join(' · ');
   $('det-clientes').textContent = clientes.length;
-  $('det-total').textContent = fmtNum.format(clientes.reduce((s, c) => s + c.nominales, 0));
   $('det-valor').textContent = 'USD ' + fmtUsd.format(clientes.reduce((s, c) => s + c.tenencia, 0));
 
   const { campo, desc } = orden;
   clientes.sort((a, b) => {
-    const cmp = (campo === 'nominales' || campo === 'tenencia')
+    const cmp = campo === 'tenencia'
       ? a[campo] - b[campo]
       : String(a[campo]).localeCompare(String(b[campo]), 'es', { numeric: true });
     return desc ? -cmp : cmp;
@@ -503,7 +510,7 @@ function renderDetalle() {
       tdAsesor.textContent = c.asesor;
       tr.appendChild(tdAsesor);
     }
-    for (const [valor, clase] of [[fmtNum.format(c.nominales), 'num'], [fmtUsd.format(c.tenencia), 'num']]) {
+    for (const [valor, clase] of [[fmtUsd.format(c.tenencia), 'num']]) {
       const td = document.createElement('td');
       td.textContent = valor;
       if (clase) td.className = clase;
@@ -530,11 +537,11 @@ function tablaParaImagen(clientes) {
   tabla.className = 'tabla-acreditaciones';
   const conAsesor = viendoTodos();
   tabla.innerHTML = '<thead><tr><th>Nombre</th><th>Comitente</th>' + (conAsesor ? '<th>Asesor</th>' : '')
-    + '<th class="columna-importe">Nominales</th><th class="columna-importe">Valor (USD)</th></tr></thead>';
+    + '<th class="columna-importe">Valor (USD)</th></tr></thead>';
   const tbody = document.createElement('tbody');
   for (const c of clientes) {
     const tr = document.createElement('tr');
-    const celdas = [[c.cuenta, ''], [c.comitente, ''], [fmtNum.format(c.nominales), 'columna-importe'], [fmtUsd.format(c.tenencia), 'columna-importe']];
+    const celdas = [[c.cuenta, ''], [c.comitente, ''], [fmtUsd.format(c.tenencia), 'columna-importe']];
     if (conAsesor) celdas.splice(2, 0, [c.asesor, '']);
     for (const [valor, clase] of celdas) {
       const td = document.createElement('td');
@@ -831,7 +838,7 @@ function initEventos() {
   document.querySelectorAll('th[data-orden-cli]').forEach(th => {
     th.addEventListener('click', () => {
       const campo = th.dataset.ordenCli;
-      const numerico = campo === 'nominales' || campo === 'tenencia';
+      const numerico = campo === 'dias' || campo === 'tenencia';
       ordenCliente = { campo, desc: ordenCliente.campo === campo ? !ordenCliente.desc : numerico };
       renderDetalleCliente();
     });
@@ -841,7 +848,7 @@ function initEventos() {
   document.querySelectorAll('th[data-orden]').forEach(th => {
     th.addEventListener('click', () => {
       const campo = th.dataset.orden;
-      orden = { campo, desc: orden.campo === campo ? !orden.desc : (campo === 'nominales' || campo === 'tenencia') };
+      orden = { campo, desc: orden.campo === campo ? !orden.desc : campo === 'tenencia' };
       renderDetalle();
     });
   });
