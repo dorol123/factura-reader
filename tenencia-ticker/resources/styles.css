@@ -996,3 +996,6 @@ body {
   .seccion-tab { padding: 0 8px; }
   .seccion-tab.activa::after { left: 8px; right: 8px; }
 }
+
+/* Columna Asesor (sólo con "Todos") */
+.tabla-tenencia td.col-asesor { color: var(--suave); font-variant-numeric: normal; }

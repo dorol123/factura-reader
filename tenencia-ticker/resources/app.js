@@ -110,6 +110,10 @@ function asesoresDisponibles() {
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
 }
 
+function viendoTodos() {
+  return config.asesor === TODOS;
+}
+
 function filasVisibles() {
   if (!datos) return [];
   if (!config.asesor || config.asesor === TODOS) return datos.filas;
@@ -296,7 +300,7 @@ function clientesDeTicker(ticker) {
       c.nominales += r.nominales;
       c.tenencia += tenencia;
     } else {
-      mapa.set(r.comitente, { cuenta: r.cuenta, comitente: r.comitente, nominales: r.nominales, tenencia });
+      mapa.set(r.comitente, { cuenta: r.cuenta, comitente: r.comitente, asesor: asesorDe(r), nominales: r.nominales, tenencia });
     }
   }
   return [...mapa.values()];
@@ -308,7 +312,7 @@ function resumenClientes() {
   for (const r of filasVisibles()) {
     let c = mapa.get(r.comitente);
     if (!c) {
-      c = { comitente: r.comitente, cuenta: r.cuenta, aum: 0, tickers: new Set(), perfil: r.original?.['Perfil de Inversor'] || '' };
+      c = { comitente: r.comitente, cuenta: r.cuenta, asesor: asesorDe(r), aum: 0, tickers: new Set(), perfil: r.original?.['Perfil de Inversor'] || '' };
       mapa.set(r.comitente, c);
     }
     c.aum += tenenciaDe(r);
@@ -370,7 +374,9 @@ function renderClientes() {
     li.querySelector('.c-pos').textContent = `${i + 1}.`;
     li.querySelector('.c-nombre').textContent = c.cuenta;
     li.querySelector('.t-aum').textContent = 'USD ' + fmtEntero.format(c.aum);
-    li.querySelector('.t-instr').textContent = `Comitente ${c.comitente}`;
+    li.querySelector('.t-instr').textContent = viendoTodos() && c.asesor
+      ? `${c.comitente} · ${c.asesor}`
+      : `Comitente ${c.comitente}`;
     li.querySelector('.t-cant').textContent = c.tickers.size === 1 ? '1 ticker' : `${c.tickers.size} tickers`;
     li.title = `${c.cuenta} — comitente ${c.comitente} (USD ${fmtUsd.format(c.aum)})`;
     li.addEventListener('click', () => {
@@ -397,6 +403,7 @@ function renderDetalleCliente() {
   sub.innerHTML = '';
   sub.append('Comitente ', cliente.comitente, botonCopiar(cliente.comitente));
   if (cliente.perfil) sub.append(` · Perfil ${cliente.perfil}`);
+  if (viendoTodos() && cliente.asesor) sub.append(` · Asesor: ${cliente.asesor}`);
   $('cli-tickers').textContent = posiciones.length;
   $('cli-aum').textContent = 'USD ' + fmtUsd.format(cliente.aum);
 
@@ -490,6 +497,12 @@ function renderDetalle() {
     const tdComitente = document.createElement('td');
     tdComitente.append(c.comitente, botonCopiar(c.comitente));
     tr.appendChild(tdComitente);
+    if (viendoTodos()) {
+      const tdAsesor = document.createElement('td');
+      tdAsesor.className = 'col-asesor';
+      tdAsesor.textContent = c.asesor;
+      tr.appendChild(tdAsesor);
+    }
     for (const [valor, clase] of [[fmtNum.format(c.nominales), 'num'], [fmtUsd.format(c.tenencia), 'num']]) {
       const td = document.createElement('td');
       td.textContent = valor;
@@ -504,6 +517,7 @@ function renderDetalle() {
     th.classList.toggle('orden-desc', th.dataset.orden === campo && desc);
   });
 
+  $('th-asesor').hidden = !viendoTodos();
   actualizarBotonesImagenTicker(clientes, info);
 }
 
@@ -514,12 +528,15 @@ const UMBRAL_DIVIDIR_IMAGEN = 60;
 function tablaParaImagen(clientes) {
   const tabla = document.createElement('table');
   tabla.className = 'tabla-acreditaciones';
-  tabla.innerHTML = '<thead><tr><th>Nombre</th><th>Comitente</th>'
+  const conAsesor = viendoTodos();
+  tabla.innerHTML = '<thead><tr><th>Nombre</th><th>Comitente</th>' + (conAsesor ? '<th>Asesor</th>' : '')
     + '<th class="columna-importe">Nominales</th><th class="columna-importe">Valor (USD)</th></tr></thead>';
   const tbody = document.createElement('tbody');
   for (const c of clientes) {
     const tr = document.createElement('tr');
-    for (const [valor, clase] of [[c.cuenta, ''], [c.comitente, ''], [fmtNum.format(c.nominales), 'columna-importe'], [fmtUsd.format(c.tenencia), 'columna-importe']]) {
+    const celdas = [[c.cuenta, ''], [c.comitente, ''], [fmtNum.format(c.nominales), 'columna-importe'], [fmtUsd.format(c.tenencia), 'columna-importe']];
+    if (conAsesor) celdas.splice(2, 0, [c.asesor, '']);
+    for (const [valor, clase] of celdas) {
       const td = document.createElement('td');
       td.textContent = valor;
       if (clase) td.className = clase;
