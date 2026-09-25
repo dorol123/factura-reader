@@ -1,9 +1,15 @@
 /* Valiu: blanco + azul marino (azul Balanz). Para ajustar el azul, cambiar --marca. */
+@font-face {
+  font-family: 'Sora';
+  font-weight: 700;
+  src: url('fonts/sora-700.woff2') format('woff2');
+}
 :root {
   --marca: #0a2f6b;
   --marca-hover: #0e3f8c;
   --marca-suave: #eaf0f8;
   --marca-linea: #c9d6ea;
+  --marca-claro: #9db8e3;
   --fondo: #f5f7fa;
   --panel: #ffffff;
   --borde: #e2e7ef;
@@ -50,13 +56,28 @@ body {
   gap: 10px;
 }
 
-.logo { width: 28px; height: 28px; color: #fff; }
+.logo { width: 30px; height: 30px; }
 
+/* Logotipo: "valiu" en minúscula con el punto de la i cuadrado en azul claro */
 .marca-nombre {
-  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
-  font-size: 21px;
+  font-family: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  font-size: 24px;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.marca-nombre .i { position: relative; display: inline-block; }
+
+.marca-nombre .i b {
+  position: absolute;
+  left: 50%;
+  top: -0.08em;
+  width: 0.2em;
+  height: 0.2em;
+  transform: translateX(-50%);
+  background: var(--marca-claro);
+  border-radius: 1.5px;
 }
 
 .marca-seccion {
@@ -232,10 +253,10 @@ body {
 }
 
 .detalle-head h2 {
-  font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Sora', 'Segoe UI', system-ui, sans-serif;
   font-size: 28px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.03em;
   color: var(--marca);
 }
 
