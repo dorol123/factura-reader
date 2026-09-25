@@ -27,7 +27,17 @@
   <!-- Con datos -->
   <main class="principal" id="vista-datos" hidden>
     <aside class="tickers">
-      <input type="search" id="buscar-ticker" placeholder="Buscar ticker o instrumento…" autocomplete="off">
+      <div class="tickers-controles">
+        <input type="search" id="buscar-ticker" placeholder="Buscar ticker o instrumento…" autocomplete="off">
+        <label class="orden">
+          Ordenar por
+          <select id="orden-tickers">
+            <option value="aum">AUM total</option>
+            <option value="clientes">Cantidad de clientes</option>
+            <option value="ticker">Ticker (A-Z)</option>
+          </select>
+        </label>
+      </div>
       <ul id="lista-tickers"></ul>
     </aside>
 

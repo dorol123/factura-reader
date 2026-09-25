@@ -7,6 +7,7 @@ let orden = { campo: 'nominales', desc: true };
 const $ = (id) => document.getElementById(id);
 
 const fmtNum = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 });
+const fmtEntero = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 });
 const fmtUsd = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtFecha = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short' });
 
@@ -100,12 +101,24 @@ function resumenTickers() {
   for (const r of datos.filas) {
     let t = mapa.get(r.ticker);
     if (!t) {
-      t = { ticker: r.ticker, instrumento: r.instrumento, tipo: r.tipo, comitentes: new Set() };
+      t = { ticker: r.ticker, instrumento: r.instrumento, tipo: r.tipo, comitentes: new Set(), aum: 0 };
       mapa.set(r.ticker, t);
     }
     t.comitentes.add(r.comitente);
+    t.aum += tenenciaDe(r);
   }
-  return [...mapa.values()].sort((a, b) => a.ticker.localeCompare(b.ticker));
+  const lista = [...mapa.values()];
+  const criterio = $('orden-tickers').value;
+  return lista.sort((a, b) => {
+    if (criterio === 'aum') return b.aum - a.aum || a.ticker.localeCompare(b.ticker);
+    if (criterio === 'clientes') return b.comitentes.size - a.comitentes.size || b.aum - a.aum;
+    return a.ticker.localeCompare(b.ticker);
+  });
+}
+
+// Datos guardados con versiones anteriores no tienen el campo tenencia
+function tenenciaDe(r) {
+  return r.tenencia ?? (Number(r.original?.Tenencia) || 0);
 }
 
 // Un cliente puede tener el mismo ticker en más de una fila: se suman sus nominales
@@ -113,8 +126,7 @@ function clientesDeTicker(ticker) {
   const mapa = new Map();
   for (const r of datos.filas) {
     if (r.ticker !== ticker) continue;
-    // Datos guardados con versiones anteriores no tienen el campo tenencia
-    const tenencia = r.tenencia ?? (Number(r.original?.Tenencia) || 0);
+    const tenencia = tenenciaDe(r);
     const c = mapa.get(r.comitente);
     if (c) {
       c.nominales += r.nominales;
@@ -149,12 +161,13 @@ function renderTickers() {
     const li = document.createElement('li');
     li.className = t.ticker === tickerActual ? 'activo' : '';
     li.innerHTML = `
-      <div class="t-fila"><strong></strong><span class="t-cant"></span></div>
-      <div class="t-instr"></div>`;
+      <div class="t-fila"><strong></strong><span class="t-aum"></span></div>
+      <div class="t-fila"><span class="t-instr"></span><span class="t-cant"></span></div>`;
     li.querySelector('strong').textContent = t.ticker;
-    li.querySelector('.t-cant').textContent = t.comitentes.size;
+    li.querySelector('.t-aum').textContent = 'USD ' + fmtEntero.format(t.aum);
+    li.querySelector('.t-cant').textContent = t.comitentes.size === 1 ? '1 cliente' : `${t.comitentes.size} clientes`;
     li.querySelector('.t-instr').textContent = t.instrumento;
-    li.title = `${t.ticker} — ${t.instrumento} (${t.comitentes.size} clientes)`;
+    li.title = `${t.ticker} — ${t.instrumento} (${t.comitentes.size} clientes, USD ${fmtUsd.format(t.aum)})`;
     li.addEventListener('click', () => {
       tickerActual = t.ticker;
       renderTickers();
@@ -234,6 +247,7 @@ function initEventos() {
   });
 
   $('buscar-ticker').addEventListener('input', renderTickers);
+  $('orden-tickers').addEventListener('change', renderTickers);
 
   document.querySelectorAll('th[data-orden]').forEach(th => {
     th.addEventListener('click', () => {

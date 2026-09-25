@@ -103,15 +103,34 @@ body {
   border-right: 1px solid var(--borde);
 }
 
-.tickers input {
-  margin: 12px;
+.tickers-controles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.tickers input, .tickers select {
   padding: 8px 10px;
   border: 1px solid var(--borde);
   border-radius: 6px;
+  background: var(--panel);
+  color: var(--texto);
   font: inherit;
 }
 
-.tickers input:focus { outline: 2px solid var(--acento); border-color: transparent; }
+.tickers input:focus, .tickers select:focus { outline: 2px solid var(--acento); border-color: transparent; }
+
+.orden {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--suave);
+  font-size: 13px;
+}
+
+.orden select { flex: 1; }
 
 .tickers ul {
   list-style: none;
@@ -130,8 +149,10 @@ body {
 .tickers li.sin-resultados { color: var(--suave); cursor: default; }
 
 .t-fila { display: flex; justify-content: space-between; align-items: baseline; }
-.t-cant { color: var(--suave); font-size: 12px; }
+.t-aum { font-size: 12px; font-variant-numeric: tabular-nums; }
+.t-cant { color: var(--suave); font-size: 12px; white-space: nowrap; margin-left: 8px; }
 .t-instr {
+  min-width: 0;
   color: var(--suave);
   font-size: 12px;
   white-space: nowrap;
