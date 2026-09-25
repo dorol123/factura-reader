@@ -7,6 +7,7 @@ let orden = { campo: 'nominales', desc: true };
 const $ = (id) => document.getElementById(id);
 
 const fmtNum = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 });
+const fmtUsd = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtFecha = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short' });
 
 // Columnas del export que usa la app (se busca por nombre, sin importar mayúsculas/acentos)
@@ -16,7 +17,8 @@ const COLUMNAS = {
   ticker: 'ticker',
   instrumento: 'instrumento',
   tipo: 'tipo',
-  nominales: 'nominales'
+  nominales: 'nominales',
+  tenencia: 'tenencia'
 };
 
 function normalizar(texto) {
@@ -64,6 +66,7 @@ function leerExcel(buffer, nombreArchivo) {
       instrumento: indice.instrumento >= 0 ? String(fila[indice.instrumento] ?? '').trim() : '',
       tipo: indice.tipo >= 0 ? String(fila[indice.tipo] ?? '').trim() : '',
       nominales: Number(fila[indice.nominales]) || 0,
+      tenencia: indice.tenencia >= 0 ? Number(fila[indice.tenencia]) || 0 : 0,
       original
     });
   }
@@ -110,9 +113,15 @@ function clientesDeTicker(ticker) {
   const mapa = new Map();
   for (const r of datos.filas) {
     if (r.ticker !== ticker) continue;
+    // Datos guardados con versiones anteriores no tienen el campo tenencia
+    const tenencia = r.tenencia ?? (Number(r.original?.Tenencia) || 0);
     const c = mapa.get(r.comitente);
-    if (c) c.nominales += r.nominales;
-    else mapa.set(r.comitente, { cuenta: r.cuenta, comitente: r.comitente, nominales: r.nominales });
+    if (c) {
+      c.nominales += r.nominales;
+      c.tenencia += tenencia;
+    } else {
+      mapa.set(r.comitente, { cuenta: r.cuenta, comitente: r.comitente, nominales: r.nominales, tenencia });
+    }
   }
   return [...mapa.values()];
 }
@@ -169,11 +178,12 @@ function renderDetalle() {
   $('det-instrumento').textContent = [info.instrumento, info.tipo].filter(Boolean).join(' · ');
   $('det-clientes').textContent = clientes.length;
   $('det-total').textContent = fmtNum.format(clientes.reduce((s, c) => s + c.nominales, 0));
+  $('det-valor').textContent = 'USD ' + fmtUsd.format(clientes.reduce((s, c) => s + c.tenencia, 0));
 
   const { campo, desc } = orden;
   clientes.sort((a, b) => {
-    const cmp = campo === 'nominales'
-      ? a.nominales - b.nominales
+    const cmp = (campo === 'nominales' || campo === 'tenencia')
+      ? a[campo] - b[campo]
       : String(a[campo]).localeCompare(String(b[campo]), 'es', { numeric: true });
     return desc ? -cmp : cmp;
   });
@@ -182,7 +192,7 @@ function renderDetalle() {
   body.innerHTML = '';
   for (const c of clientes) {
     const tr = document.createElement('tr');
-    for (const [valor, clase] of [[c.cuenta, ''], [c.comitente, ''], [fmtNum.format(c.nominales), 'num']]) {
+    for (const [valor, clase] of [[c.cuenta, ''], [c.comitente, ''], [fmtNum.format(c.nominales), 'num'], [fmtUsd.format(c.tenencia), 'num']]) {
       const td = document.createElement('td');
       td.textContent = valor;
       if (clase) td.className = clase;
@@ -228,7 +238,7 @@ function initEventos() {
   document.querySelectorAll('th[data-orden]').forEach(th => {
     th.addEventListener('click', () => {
       const campo = th.dataset.orden;
-      orden = { campo, desc: orden.campo === campo ? !orden.desc : campo === 'nominales' };
+      orden = { campo, desc: orden.campo === campo ? !orden.desc : (campo === 'nominales' || campo === 'tenencia') };
       renderDetalle();
     });
   });
