@@ -503,6 +503,124 @@ function renderDetalle() {
     th.classList.toggle('orden-asc', th.dataset.orden === campo && !desc);
     th.classList.toggle('orden-desc', th.dataset.orden === campo && desc);
   });
+
+  actualizarBotonesImagenTicker(clientes, info);
+}
+
+// ── Copiar como imagen (mismo formato que Acreditaciones) ──
+
+const UMBRAL_DIVIDIR_IMAGEN = 60;
+
+function tablaParaImagen(clientes) {
+  const tabla = document.createElement('table');
+  tabla.className = 'tabla-acreditaciones';
+  tabla.innerHTML = '<thead><tr><th>Nombre</th><th>Comitente</th>'
+    + '<th class="columna-importe">Nominales</th><th class="columna-importe">Valor (USD)</th></tr></thead>';
+  const tbody = document.createElement('tbody');
+  for (const c of clientes) {
+    const tr = document.createElement('tr');
+    for (const [valor, clase] of [[c.cuenta, ''], [c.comitente, ''], [fmtNum.format(c.nominales), 'columna-importe'], [fmtUsd.format(c.tenencia), 'columna-importe']]) {
+      const td = document.createElement('td');
+      td.textContent = valor;
+      if (clase) td.className = clase;
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  tabla.appendChild(tbody);
+  return tabla;
+}
+
+async function generarImagen(tabla, titulo) {
+  const envoltorio = document.createElement('div');
+  envoltorio.className = 'acr-captura';
+  const encabezado = document.createElement('div');
+  encabezado.className = 'acr-captura-titulo';
+  encabezado.textContent = titulo;
+  envoltorio.append(encabezado, tabla);
+  document.body.appendChild(envoltorio);
+  try {
+    const canvas = await html2canvas(envoltorio, { backgroundColor: '#ffffff', scale: 2 });
+    return await new Promise((resolve, reject) => {
+      canvas.toBlob(b => (b ? resolve(b) : reject(new Error('No se pudo generar la imagen.'))), 'image/png');
+    });
+  } finally {
+    envoltorio.remove();
+  }
+}
+
+// Si no se puede copiar al portapapeles, se guarda como archivo
+async function guardarImagen(blob, nombre) {
+  if (Storage.esApp) {
+    const ruta = await Neutralino.os.showSaveDialog('Guardar imagen', {
+      defaultPath: nombre,
+      filters: [{ name: 'Imagen PNG', extensions: ['png'] }]
+    });
+    if (!ruta) return false;
+    await Neutralino.filesystem.writeBinaryFile(ruta, await blob.arrayBuffer());
+    return true;
+  }
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = nombre;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  URL.revokeObjectURL(url);
+  return true;
+}
+
+function crearBotonImagen(etiqueta, clientes, titulo, nombreArchivo) {
+  const boton = document.createElement('button');
+  boton.type = 'button';
+  boton.className = 'btn-secundario';
+  boton.textContent = etiqueta;
+  boton.addEventListener('click', async () => {
+    boton.disabled = true;
+    boton.textContent = 'Generando imagen…';
+    let resultado = etiqueta;
+    try {
+      const blob = await generarImagen(tablaParaImagen(clientes), titulo);
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        resultado = '✓ Copiada: pegala en WhatsApp con Ctrl+V';
+      } catch (err) {
+        if (await guardarImagen(blob, nombreArchivo)) resultado = '✓ Guardada como archivo';
+      }
+    } catch (err) {
+      console.error(err);
+      resultado = 'No se pudo generar la imagen';
+    }
+    boton.textContent = resultado;
+    setTimeout(() => {
+      boton.disabled = false;
+      boton.textContent = etiqueta;
+    }, 2000);
+  });
+  return boton;
+}
+
+// Con muchos clientes, WhatsApp comprime una imagen muy alta: pasado el umbral se arman dos
+function actualizarBotonesImagenTicker(clientes, info) {
+  const zona = $('det-zona-imagen');
+  const nota = $('det-imagen-nota');
+  zona.innerHTML = '';
+  const total = clientes.reduce((s, c) => s + c.tenencia, 0);
+  const titulo = `${tickerActual} — ${info.instrumento} · ${clientes.length} ${clientes.length === 1 ? 'cliente' : 'clientes'} · USD ${fmtUsd.format(total)}`;
+  const base = `tenencia-${tickerActual.replace(/[^\w-]+/g, '_')}`;
+  if (clientes.length > UMBRAL_DIVIDIR_IMAGEN) {
+    const mitad = Math.ceil(clientes.length / 2);
+    zona.append(
+      crearBotonImagen('Copiar imagen 1', clientes.slice(0, mitad), titulo, `${base}-1.png`),
+      crearBotonImagen('Copiar imagen 2', clientes.slice(mitad), titulo, `${base}-2.png`)
+    );
+    nota.textContent = `Son ${clientes.length} clientes: se arman 2 imágenes porque en una sola la calidad bajaría mucho.`;
+    nota.hidden = false;
+  } else {
+    zona.append(crearBotonImagen('Copiar imagen', clientes, titulo, `${base}.png`));
+    nota.hidden = true;
+  }
 }
 
 // ── Copiar comitente ──

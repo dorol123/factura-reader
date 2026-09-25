@@ -51,6 +51,8 @@ body {
 }
 
 .marca {
+  flex: none;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -116,7 +118,7 @@ body {
 }
 
 .acciones-tenencia {
-  flex: 1;
+  flex: 1 0 auto;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -839,7 +841,8 @@ body {
 
 .asesor-menu {
   position: relative;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 90px;
   margin-left: auto;
 }
 
@@ -849,7 +852,8 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  max-width: 240px;
+  width: 100%;
+  max-width: 210px;
   padding: 6px 10px 6px 12px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -972,4 +976,23 @@ body {
   margin-bottom: 4px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--borde);
+}
+
+/* ── Copiar imagen en Tenencia por ticker ── */
+
+.det-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: -8px;
+}
+
+.det-zona-imagen { display: flex; gap: 8px; }
+.det-imagen-nota { color: var(--tenue); font-size: 12px; }
+
+/* Ventanas más angostas que la inicial: se compacta la barra superior */
+@media (max-width: 1260px) {
+  .seccion-tab { padding: 0 8px; }
+  .seccion-tab.activa::after { left: 8px; right: 8px; }
 }
