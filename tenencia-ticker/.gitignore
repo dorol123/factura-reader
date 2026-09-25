@@ -1,0 +1,7 @@
+bin/
+dist/
+resources/js/neutralino.js
+resources/js/neutralino.d.ts
+.tmp/
+.storage/
+*.log

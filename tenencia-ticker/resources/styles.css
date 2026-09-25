@@ -1,0 +1,209 @@
+:root {
+  --fondo: #f4f6f9;
+  --panel: #ffffff;
+  --borde: #dfe3ea;
+  --texto: #1c2430;
+  --suave: #677385;
+  --acento: #1f5fbf;
+  --acento-suave: #e8f0fc;
+  --error: #c0392b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  background: var(--fondo);
+  color: var(--texto);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+[hidden] { display: none !important; }
+
+/* ── Barra superior ── */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--borde);
+}
+
+.topbar h1 { font-size: 17px; font-weight: 600; }
+
+.estado {
+  flex: 1;
+  color: var(--suave);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn {
+  background: var(--acento);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover { filter: brightness(1.1); }
+
+/* ── Sin datos ── */
+
+.vacio {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.drop {
+  width: min(560px, 100%);
+  padding: 48px 32px;
+  text-align: center;
+  background: var(--panel);
+  border: 2px dashed var(--borde);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.drop:hover, .drop.encima { border-color: var(--acento); background: var(--acento-suave); }
+.drop-titulo { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+.drop-sub { color: var(--suave); margin-top: 4px; }
+
+.error { color: var(--error); margin-top: 16px; max-width: 560px; text-align: center; }
+
+/* ── Con datos ── */
+
+.principal {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.tickers {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--borde);
+}
+
+.tickers input {
+  margin: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.tickers input:focus { outline: 2px solid var(--acento); border-color: transparent; }
+
+.tickers ul {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tickers li {
+  padding: 8px 14px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+
+.tickers li:hover { background: var(--fondo); }
+.tickers li.activo { background: var(--acento-suave); border-left-color: var(--acento); }
+.tickers li.sin-resultados { color: var(--suave); cursor: default; }
+
+.t-fila { display: flex; justify-content: space-between; align-items: baseline; }
+.t-cant { color: var(--suave); font-size: 12px; }
+.t-instr {
+  color: var(--suave);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detalle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px;
+}
+
+.detalle-vacio {
+  margin: auto;
+  color: var(--suave);
+  font-size: 15px;
+}
+
+#detalle {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.detalle-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.detalle-head h2 { font-size: 22px; }
+.detalle-head p { color: var(--suave); }
+
+.resumen { display: flex; gap: 24px; text-align: right; }
+.resumen span { display: block; font-size: 20px; font-weight: 600; }
+.resumen small { color: var(--suave); }
+
+.tabla-wrap {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+th, td { padding: 9px 14px; text-align: left; }
+
+th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--borde);
+  color: var(--suave);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+th:hover { color: var(--texto); }
+th.orden-asc::after { content: ' ▲'; font-size: 10px; }
+th.orden-desc::after { content: ' ▼'; font-size: 10px; }
+
+td { border-bottom: 1px solid var(--fondo); }
+tr:hover td { background: var(--fondo); }
+
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+td:nth-child(2) { font-variant-numeric: tabular-nums; }

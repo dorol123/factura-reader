@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenencia por Ticker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Tenencia por Ticker</h1>
+    <div class="estado" id="estado">Sin datos cargados</div>
+    <button class="btn" id="btn-cargar">Cargar Excel</button>
+    <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" hidden>
+  </header>
+
+  <!-- Sin datos -->
+  <main class="vacio" id="vista-vacia">
+    <div class="drop" id="drop">
+      <p class="drop-titulo">Cargá el Excel de Tenencia por Ticker</p>
+      <p class="drop-sub">Planning Individuos 2 → Tablero general → Tenencia por ticker → Exportar</p>
+      <p class="drop-sub">Arrastralo acá o hacé clic para elegirlo. Los datos se guardan sólo en esta PC.</p>
+    </div>
+    <p class="error" id="error"></p>
+  </main>
+
+  <!-- Con datos -->
+  <main class="principal" id="vista-datos" hidden>
+    <aside class="tickers">
+      <input type="search" id="buscar-ticker" placeholder="Buscar ticker o instrumento…" autocomplete="off">
+      <ul id="lista-tickers"></ul>
+    </aside>
+
+    <section class="detalle">
+      <div class="detalle-vacio" id="detalle-vacio">Elegí un ticker de la lista</div>
+      <div id="detalle" hidden>
+        <div class="detalle-head">
+          <div>
+            <h2 id="det-ticker"></h2>
+            <p id="det-instrumento"></p>
+          </div>
+          <div class="resumen">
+            <div><span id="det-clientes"></span><small>clientes</small></div>
+            <div><span id="det-total"></span><small>nominales totales</small></div>
+          </div>
+        </div>
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-orden="cuenta">Nombre</th>
+                <th data-orden="comitente">Comitente</th>
+                <th data-orden="nominales" class="num">Nominales</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="lib/xlsx.full.min.js"></script>
+  <script src="js/neutralino.js"></script>
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
