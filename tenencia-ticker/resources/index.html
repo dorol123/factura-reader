@@ -6,7 +6,7 @@
   <title>Valiu</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-seccion="tenencia">
   <header class="topbar">
     <div class="marca">
       <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
@@ -15,74 +15,154 @@
         <path d="M24.5 8.5 L18 23.5 H14.8 L21 8.5 Z" fill="var(--marca)" opacity=".6"/>
       </svg>
       <span class="marca-nombre" aria-label="Valiu">val<span class="i">ı<b></b></span>u</span>
-      <span class="marca-seccion">Tenencia por ticker</span>
     </div>
-    <div class="estado" id="estado">Sin datos cargados</div>
-    <button class="btn" id="btn-cargar">Cargar Excel</button>
-    <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" hidden>
+
+    <nav class="secciones" aria-label="Secciones">
+      <button type="button" class="seccion-tab" data-seccion="tenencia">Tenencia por ticker</button>
+      <button type="button" class="seccion-tab" data-seccion="acreditaciones">Acreditaciones</button>
+    </nav>
+
+    <div class="acciones-tenencia" id="acciones-tenencia">
+      <div class="estado" id="estado">Sin datos cargados</div>
+      <button class="btn" id="btn-cargar">Cargar Excel</button>
+      <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" hidden>
+    </div>
   </header>
 
-  <!-- Sin datos -->
-  <main class="vacio" id="vista-vacia">
-    <div class="drop" id="drop">
-      <p class="drop-titulo">Cargá el Excel de Tenencia por Ticker</p>
-      <p class="drop-sub">Planning Individuos 2 → Tablero general → Tenencia por ticker → Exportar</p>
-      <p class="drop-sub">Arrastralo acá o hacé clic para elegirlo. Los datos se guardan sólo en esta PC.</p>
-    </div>
-    <p class="error" id="error"></p>
-  </main>
+  <!-- ══════════ Tenencia por ticker ══════════ -->
+  <div class="seccion" id="seccion-tenencia">
 
-  <!-- Con datos -->
-  <main class="principal" id="vista-datos" hidden>
-    <aside class="tickers">
-      <div class="tickers-controles">
-        <input type="search" id="buscar-ticker" placeholder="Buscar ticker o instrumento…" autocomplete="off">
-        <label class="orden">
-          Ordenar por
-          <select id="orden-tickers">
-            <option value="aum">AUM total</option>
-            <option value="clientes">Cantidad de clientes</option>
-            <option value="ticker">Ticker (A-Z)</option>
-          </select>
-        </label>
+    <!-- Sin datos -->
+    <main class="vacio" id="vista-vacia">
+      <div class="drop" id="drop">
+        <p class="drop-titulo">Cargá el Excel de Tenencia por Ticker</p>
+        <p class="drop-sub">Planning Individuos 2 → Tablero general → Tenencia por ticker → Exportar</p>
+        <p class="drop-sub">Arrastralo acá o hacé clic para elegirlo. Los datos se guardan sólo en esta PC.</p>
       </div>
-      <ul id="lista-tickers"></ul>
-    </aside>
+      <p class="error" id="error"></p>
+    </main>
 
-    <section class="detalle">
-      <div class="detalle-vacio" id="detalle-vacio">Elegí un ticker de la lista</div>
-      <div id="detalle" hidden>
-        <div class="detalle-head">
-          <div>
-            <h2 id="det-ticker"></h2>
-            <p id="det-instrumento"></p>
+    <!-- Con datos -->
+    <main class="principal" id="vista-datos" hidden>
+      <aside class="tickers">
+        <div class="tickers-controles">
+          <input type="search" id="buscar-ticker" placeholder="Buscar ticker o instrumento…" autocomplete="off">
+          <label class="orden">
+            Ordenar por
+            <select id="orden-tickers">
+              <option value="aum">AUM total</option>
+              <option value="clientes">Cantidad de clientes</option>
+              <option value="ticker">Ticker (A-Z)</option>
+            </select>
+          </label>
+        </div>
+        <ul id="lista-tickers"></ul>
+      </aside>
+
+      <section class="detalle">
+        <div class="detalle-vacio" id="detalle-vacio">Elegí un ticker de la lista</div>
+        <div id="detalle" hidden>
+          <div class="detalle-head">
+            <div>
+              <h2 id="det-ticker"></h2>
+              <p id="det-instrumento"></p>
+            </div>
+            <div class="resumen">
+              <div><span id="det-clientes"></span><small>clientes</small></div>
+              <div><span id="det-total"></span><small>nominales totales</small></div>
+              <div><span id="det-valor"></span><small>valor total</small></div>
+            </div>
           </div>
-          <div class="resumen">
-            <div><span id="det-clientes"></span><small>clientes</small></div>
-            <div><span id="det-total"></span><small>nominales totales</small></div>
-            <div><span id="det-valor"></span><small>valor total</small></div>
+          <div class="tabla-wrap">
+            <table class="tabla-tenencia">
+              <thead>
+                <tr>
+                  <th data-orden="cuenta">Nombre</th>
+                  <th data-orden="comitente">Comitente</th>
+                  <th data-orden="nominales" class="num">Nominales</th>
+                  <th data-orden="tenencia" class="num">Valor (USD)</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-body"></tbody>
+            </table>
           </div>
         </div>
-        <div class="tabla-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th data-orden="cuenta">Nombre</th>
-                <th data-orden="comitente">Comitente</th>
-                <th data-orden="nominales" class="num">Nominales</th>
-                <th data-orden="tenencia" class="num">Valor (USD)</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-body"></tbody>
-          </table>
+      </section>
+    </main>
+  </div>
+
+  <!-- ══════════ Acreditaciones ══════════ -->
+  <div class="seccion" id="seccion-acreditaciones" hidden>
+    <main class="principal">
+      <aside class="acr-panel">
+        <form id="acr-form" class="acr-form">
+          <label class="acr-drop" id="acr-drop" for="acr-archivo">
+            <span class="acr-drop-titulo" id="acr-drop-texto">Cargá el Excel de acreditaciones</span>
+            <span class="acr-drop-sub">Arrastralo acá o hacé clic para elegirlo</span>
+          </label>
+          <input type="file" id="acr-archivo" accept=".xlsx" hidden>
+
+          <fieldset class="acr-rango">
+            <legend>Rango a procesar</legend>
+            <div class="acr-rango-fila">
+              <label>Desde<input type="date" id="acr-fecha-desde" required></label>
+              <label>Hora<input type="time" id="acr-hora-desde" required></label>
+            </div>
+            <div class="acr-rango-fila">
+              <label>Hasta<input type="date" id="acr-fecha-hasta" required></label>
+              <label>Hora<input type="time" id="acr-hora-hasta" required></label>
+            </div>
+            <div class="acr-atajos">
+              <button type="button" class="acr-atajo" data-atajo="10-13">10 a 13</button>
+              <button type="button" class="acr-atajo" data-atajo="13-16">13 a 16</button>
+              <button type="button" class="acr-atajo" data-atajo="16-10">16 (día ant.) a 10</button>
+            </div>
+            <p class="acr-nota">
+              "16 (día ant.) a 10" toma desde las 16 hs del día hábil anterior. Si hoy es lunes,
+              salta al viernes: revisá que esa fecha sea la correcta (feriados, etc.).
+            </p>
+          </fieldset>
+
+          <button type="submit" class="btn-principal" id="acr-descargar" disabled>Descargar Excel procesado</button>
+          <p class="acr-mensaje" id="acr-mensaje" role="status"></p>
+        </form>
+
+        <div class="acr-reglas">
+          <p><strong>Pesos:</strong> se omiten importes hasta $ 999.999; en rojo desde $ 5.000.000.</p>
+          <p><strong>Dólares</strong> (MEP + Cable): se omiten hasta 999; en rojo desde 5.000.</p>
         </div>
-      </div>
-    </section>
-  </main>
+      </aside>
+
+      <section class="detalle">
+        <div class="detalle-vacio" id="acr-vacio">Cargá el Excel para ver la vista previa</div>
+        <div class="acr-preview" id="acr-preview" hidden>
+          <div class="acr-toolbar">
+            <div class="acr-tabs" id="acr-tabs" role="tablist"></div>
+            <label class="orden">
+              Asesor
+              <select id="acr-asesor"></select>
+            </label>
+            <div class="acr-botones">
+              <span id="acr-zona-imagen"></span>
+              <button type="button" class="btn-secundario" id="acr-seleccionar">Seleccionar celdas</button>
+            </div>
+          </div>
+          <p class="acr-nota" id="acr-nota-imagen" hidden></p>
+          <div class="acr-tabla-wrap" id="acr-tabla-wrap"></div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script src="lib/xlsx.full.min.js"></script>
+  <script src="lib/jszip.min.js"></script>
+  <script src="lib/exceljs.min.js"></script>
+  <script src="lib/html2canvas.min.js"></script>
   <script src="js/neutralino.js"></script>
   <script src="storage.js"></script>
   <script src="app.js"></script>
+  <script src="acreditaciones-motor.js"></script>
+  <script src="acreditaciones.js"></script>
+  <script src="secciones.js"></script>
 </body>
 </html>

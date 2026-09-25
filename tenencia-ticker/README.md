@@ -1,7 +1,11 @@
 # Valiu
 
-App de escritorio portable para Windows. Sección *Tenencia por ticker*: elegís un ticker y muestra qué clientes lo tienen
-(nombre, comitente, nominales y valor en USD).
+App de escritorio portable para Windows con dos secciones:
+
+- **Tenencia por ticker**: elegís un ticker y muestra qué clientes lo tienen (nombre, comitente, nominales y valor en USD).
+- **Acreditaciones**: procesa el Excel de acreditaciones (el mismo motor del Procesador de Acreditaciones):
+  filtra por rango de fecha/hora, separa Pesos y Dólares, resalta importes altos, copia la tabla como imagen
+  para WhatsApp y guarda el Excel procesado.
 
 - Es un único `.exe`, no se instala. Doble clic y abre.
 - Usa el motor de Edge (WebView2) que ya trae Windows 10/11.
@@ -14,6 +18,9 @@ App de escritorio portable para Windows. Sección *Tenencia por ticker*: elegís
 2. Abrí `Valiu.exe` y cargá el Excel (botón *Cargar Excel* o arrastrándolo a la ventana).
 3. Elegí un ticker de la lista (se puede buscar por ticker o nombre del instrumento).
 4. Hacé clic en los encabezados de la tabla para ordenar.
+
+Acreditaciones: cargá el Excel, elegí el rango (o un atajo: 10 a 13, 13 a 16, 16 del día hábil anterior a 10),
+revisá la vista previa y usá *Copiar imagen* o *Descargar Excel procesado*. Estos archivos no se guardan en la app.
 
 Al volver a abrir la app, los últimos datos cargados ya están. Cargar un Excel nuevo reemplaza al anterior.
 
@@ -37,7 +44,11 @@ en ese caso los datos se guardan en el `localStorage` del navegador.
 ### Estructura
 
 - `resources/index.html`, `styles.css`: interfaz
-- `resources/app.js`: lectura del Excel, agrupación por ticker y tabla
+- `resources/secciones.js`: navegación entre secciones
+- `resources/app.js`: tenencia por ticker (lectura del Excel, agrupación y tabla)
+- `resources/acreditaciones-motor.js`: motor de acreditaciones (copiado sin cambios del Procesador de Acreditaciones)
+- `resources/acreditaciones.js`: pantalla de acreditaciones
 - `resources/storage.js`: guardado local de los datos
 - `resources/lib/xlsx.full.min.js`: SheetJS 0.20.3
+- `resources/lib/exceljs.min.js`, `jszip.min.js`, `html2canvas.min.js`: usados por acreditaciones
 - `resources/fonts/sora-700.woff2`: tipografía del logo (Sora, licencia OFL)

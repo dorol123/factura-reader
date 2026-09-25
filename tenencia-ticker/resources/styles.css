@@ -80,17 +80,50 @@ body {
   border-radius: 1.5px;
 }
 
-.marca-seccion {
-  padding-left: 12px;
-  margin-left: 2px;
-  border-left: 1px solid rgba(255, 255, 255, 0.3);
+.secciones {
+  display: flex;
+  align-self: stretch;
+  gap: 4px;
+  margin-left: 12px;
+}
+
+.seccion-tab {
+  position: relative;
+  padding: 0 14px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.72);
+  font: inherit;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seccion-tab:hover { color: #fff; }
+.seccion-tab.activa { color: #fff; }
+
+.seccion-tab.activa::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--marca-claro);
+}
+
+.acciones-tenencia {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  min-width: 0;
 }
 
 .estado {
-  flex: 1;
-  text-align: right;
+  min-width: 0;
   color: rgba(255, 255, 255, 0.7);
   font-size: 12px;
   white-space: nowrap;
@@ -110,6 +143,15 @@ body {
 }
 
 .btn:hover { background: var(--marca-suave); }
+
+/* ── Secciones ── */
+
+.seccion {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 
 /* ── Sin datos ── */
 
@@ -303,11 +345,13 @@ body {
   border-radius: 10px;
 }
 
-table { width: 100%; border-collapse: collapse; }
+/* ── Tabla de tenencia ── */
 
-th, td { padding: 11px 18px; text-align: left; }
+.tabla-tenencia { width: 100%; border-collapse: collapse; }
 
-th {
+.tabla-tenencia th, .tabla-tenencia td { padding: 11px 18px; text-align: left; }
+
+.tabla-tenencia th {
   position: sticky;
   top: 0;
   background: var(--panel);
@@ -321,15 +365,231 @@ th {
   user-select: none;
 }
 
-th:hover { color: var(--marca); }
-th.orden-asc, th.orden-desc { color: var(--marca); }
-th.orden-asc::after { content: ' ▲'; font-size: 9px; }
-th.orden-desc::after { content: ' ▼'; font-size: 9px; }
+.tabla-tenencia th:hover { color: var(--marca); }
+.tabla-tenencia th.orden-asc, .tabla-tenencia th.orden-desc { color: var(--marca); }
+.tabla-tenencia th.orden-asc::after { content: ' ▲'; font-size: 9px; }
+.tabla-tenencia th.orden-desc::after { content: ' ▼'; font-size: 9px; }
 
-td { border-bottom: 1px solid var(--fondo); }
-tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: var(--marca-suave); }
+.tabla-tenencia td { border-bottom: 1px solid var(--fondo); }
+.tabla-tenencia tr:last-child td { border-bottom: none; }
+.tabla-tenencia tbody tr:hover td { background: var(--marca-suave); }
 
-.num { text-align: right; font-variant-numeric: tabular-nums; }
-td:nth-child(2) { font-variant-numeric: tabular-nums; color: var(--suave); }
-td:last-child { font-weight: 600; }
+.tabla-tenencia .num { text-align: right; font-variant-numeric: tabular-nums; }
+.tabla-tenencia td:nth-child(2) { font-variant-numeric: tabular-nums; color: var(--suave); }
+.tabla-tenencia td:last-child { font-weight: 600; }
+
+/* ── Acreditaciones ── */
+
+.acr-panel {
+  width: 330px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px;
+  overflow-y: auto;
+  background: var(--panel);
+  border-right: 1px solid var(--borde);
+}
+
+.acr-form { display: flex; flex-direction: column; gap: 16px; }
+
+.acr-drop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 22px 16px;
+  text-align: center;
+  border: 1.5px dashed var(--marca-linea);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.acr-drop:hover, .acr-drop.encima { border-color: var(--marca); background: var(--marca-suave); }
+.acr-drop.con-archivo { border-style: solid; border-color: var(--marca); background: var(--marca-suave); }
+.acr-drop-titulo { font-weight: 600; color: var(--marca); word-break: break-word; }
+.acr-drop-sub { font-size: 12px; color: var(--suave); }
+
+.acr-rango {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: none;
+}
+
+.acr-rango legend {
+  margin-bottom: 10px;
+  color: var(--suave);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.acr-rango-fila { display: grid; grid-template-columns: 1fr 96px; gap: 8px; }
+
+.acr-rango-fila label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--suave);
+  font-size: 12px;
+}
+
+.acr-rango input, .acr-toolbar select {
+  padding: 7px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--texto);
+  font: inherit;
+}
+
+.acr-atajos { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.acr-atajo, .btn-secundario {
+  padding: 6px 10px;
+  background: var(--panel);
+  border: 1px solid var(--marca-linea);
+  border-radius: 6px;
+  color: var(--marca);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acr-atajo:hover, .btn-secundario:hover:not(:disabled) { background: var(--marca-suave); border-color: var(--marca); }
+.btn-secundario:disabled { opacity: 0.6; cursor: wait; }
+
+.acr-nota { color: var(--tenue); font-size: 12px; line-height: 1.45; }
+
+.btn-principal {
+  padding: 10px 16px;
+  background: var(--marca);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-principal:hover:not(:disabled) { background: var(--marca-hover); }
+.btn-principal:disabled { opacity: 0.45; cursor: default; }
+
+.acr-mensaje { min-height: 1.2em; font-size: 13px; }
+.acr-mensaje.exito { color: #1a7f4b; }
+.acr-mensaje.error { color: var(--error); }
+
+.acr-reglas {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--borde);
+  color: var(--suave);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.acr-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.acr-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.acr-tabs {
+  display: flex;
+  padding: 3px;
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+.acr-tab {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 14px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--suave);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acr-tab small { font-size: 11px; font-variant-numeric: tabular-nums; opacity: 0.8; }
+.acr-tab.activa { background: var(--marca); color: #fff; }
+
+.acr-botones { display: flex; gap: 8px; margin-left: auto; }
+#acr-zona-imagen { display: flex; gap: 8px; }
+
+.acr-tabla-wrap {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+}
+
+/* Colores fijos (sin variables): la tabla se clona tal cual en la imagen que se copia */
+.tabla-acreditaciones {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: #0f1c2e;
+}
+
+.tabla-acreditaciones th,
+.tabla-acreditaciones td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #e2e7ef;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.tabla-acreditaciones thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #0a2f6b;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tabla-acreditaciones tbody tr:nth-child(even) { background: #f5f7fa; }
+.tabla-acreditaciones tbody tr:hover { background: #eaf0f8; }
+.tabla-acreditaciones .columna-importe { text-align: right; }
+.tabla-acreditaciones .columna-cuenta { min-width: 220px; max-width: 320px; white-space: normal; word-break: break-word; }
+.tabla-acreditaciones td.destacado { color: #d92d20; font-weight: 700; }
+.tabla-acreditaciones .tabla-vacia { padding: 24px; text-align: center; color: #5f6c80; }
+
+/* Contenedor fuera de pantalla para generar la imagen */
+.acr-captura {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  display: inline-block;
+  padding: 16px;
+  background: #fff;
+}
+
+.acr-captura-titulo {
+  margin-bottom: 10px;
+  color: #0a2f6b;
+  font: 700 16px 'Segoe UI', system-ui, sans-serif;
+}

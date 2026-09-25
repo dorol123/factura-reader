@@ -1,3 +1,7 @@
+// Sección Tenencia por ticker. Va dentro de su propio ámbito para no chocar con
+// los nombres de acreditaciones-motor.js (por ejemplo, normalizar).
+(() => {
+
 // ── Estado ──
 
 let datos = null;          // { archivo, fechaCarga, filas: [...] }
@@ -231,10 +235,11 @@ function initEventos() {
     input.value = '';
   });
 
-  // Arrastrar y soltar en cualquier parte de la ventana
+  // Arrastrar y soltar en cualquier parte de la ventana (sólo con esta sección abierta)
+  const enTenencia = () => document.body.dataset.seccion === 'tenencia';
   document.addEventListener('dragover', e => {
     e.preventDefault();
-    $('drop').classList.add('encima');
+    if (enTenencia()) $('drop').classList.add('encima');
   });
   document.addEventListener('dragleave', e => {
     if (!e.relatedTarget) $('drop').classList.remove('encima');
@@ -243,7 +248,7 @@ function initEventos() {
     e.preventDefault();
     $('drop').classList.remove('encima');
     const file = e.dataTransfer.files[0];
-    if (file) cargarArchivo(file);
+    if (file && enTenencia()) cargarArchivo(file);
   });
 
   $('buscar-ticker').addEventListener('input', renderTickers);
@@ -271,3 +276,5 @@ async function iniciar() {
 }
 
 iniciar();
+
+})();

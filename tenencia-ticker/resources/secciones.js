@@ -1,0 +1,26 @@
+// Navegación entre secciones de Valiu (barra superior)
+
+(() => {
+  const CLAVE = 'valiu-seccion';
+
+  function mostrar(seccion) {
+    document.body.dataset.seccion = seccion;
+    document.querySelectorAll('.seccion').forEach(el => {
+      el.hidden = el.id !== `seccion-${seccion}`;
+    });
+    document.querySelectorAll('.seccion-tab').forEach(tab => {
+      tab.classList.toggle('activa', tab.dataset.seccion === seccion);
+      tab.setAttribute('aria-current', tab.dataset.seccion === seccion ? 'page' : 'false');
+    });
+    document.getElementById('acciones-tenencia').hidden = seccion !== 'tenencia';
+    try { localStorage.setItem(CLAVE, seccion); } catch (err) { /* sin almacenamiento */ }
+  }
+
+  document.querySelectorAll('.seccion-tab').forEach(tab => {
+    tab.addEventListener('click', () => mostrar(tab.dataset.seccion));
+  });
+
+  let inicial = 'tenencia';
+  try { inicial = localStorage.getItem(CLAVE) || inicial; } catch (err) { /* sin almacenamiento */ }
+  mostrar(document.getElementById(`seccion-${inicial}`) ? inicial : 'tenencia');
+})();
