@@ -24,11 +24,23 @@
     </nav>
 
     <div class="acciones-tenencia" id="acciones-tenencia">
-      <div class="estado" id="estado">Sin datos cargados</div>
       <a class="link-datos" href="https://app.powerbi.com/groups/me/apps/8023a337-6088-4fcc-a0a5-3423db1838a7/reports/03c5319d-9f1e-44d4-b31c-57d11aa4ae8b/fa0646621dacd719ca0d?experience=power-bi" target="_blank" rel="noopener" data-externo>Descargar datos acá</a>
       <button class="btn-borde" id="btn-borrar-datos">Borrar datos</button>
       <button class="btn" id="btn-cargar">Cargar Excel</button>
       <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" hidden>
+    </div>
+
+    <!-- Asesor elegido: filtra las secciones de tenencia -->
+    <div class="asesor-menu" id="asesor-menu" hidden>
+      <button type="button" class="btn-asesor" id="btn-asesor" aria-haspopup="listbox" aria-expanded="false">
+        <span class="asesor-etq">Asesor</span>
+        <span class="asesor-nombre" id="asesor-nombre"></span>
+        <svg class="asesor-flecha" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg>
+      </button>
+      <div class="asesor-opciones" id="asesor-opciones" hidden>
+        <input type="search" class="buscar-asesor" id="buscar-asesor-menu" placeholder="Buscar asesor…" autocomplete="off">
+        <ul class="lista-opciones-asesor" id="asesor-lista-menu"></ul>
+      </div>
     </div>
   </header>
 
@@ -61,6 +73,7 @@
           </label>
         </div>
         <ul id="lista-tickers"></ul>
+        <p class="estado" id="estado"></p>
       </aside>
 
       <section class="detalle">
@@ -114,6 +127,7 @@
           <p class="cli-orden-nota">Ordenados por AUM, de mayor a menor</p>
         </div>
         <ul id="lista-clientes"></ul>
+        <p class="estado" id="cli-estado"></p>
       </aside>
 
       <section class="detalle">
@@ -210,6 +224,21 @@
       </section>
     </main>
   </div>
+
+  <!-- Elegir asesor (la primera vez, después de cargar el Excel) -->
+  <dialog class="dialogo" id="dialogo-asesor" aria-labelledby="titulo-asesor">
+    <div class="dialogo-head">
+      <div>
+        <h3 id="titulo-asesor">Seleccione asesor</h3>
+        <p>Valiu va a mostrar sólo los clientes de este asesor. Queda guardado, y lo podés cambiar
+          cuando quieras desde arriba a la derecha.</p>
+      </div>
+    </div>
+    <div class="dialogo-buscar">
+      <input type="search" class="buscar-asesor" id="buscar-asesor-dialogo" placeholder="Buscar asesor…" autocomplete="off">
+    </div>
+    <ul class="lista-asesores lista-opciones-asesor" id="lista-asesores"></ul>
+  </dialog>
 
   <!-- Historial de cargas del Excel de tenencia -->
   <dialog class="dialogo" id="dialogo-cargas" aria-labelledby="titulo-cargas">

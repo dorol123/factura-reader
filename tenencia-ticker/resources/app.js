@@ -10,6 +10,9 @@ let tickerActual = null;
 let orden = { campo: 'nominales', desc: true };
 let clienteActual = null;
 let ordenCliente = { campo: 'tenencia', desc: true };
+let config = {};           // { asesor: nombre del asesor o TODOS }
+
+const TODOS = '__todos__';
 
 const $ = (id) => document.getElementById(id);
 
@@ -26,7 +29,8 @@ const COLUMNAS = {
   instrumento: 'instrumento',
   tipo: 'tipo',
   nominales: 'nominales',
-  tenencia: 'tenencia'
+  tenencia: 'tenencia',
+  asesor: 'asesor'
 };
 
 function normalizar(texto) {
@@ -75,6 +79,7 @@ function leerExcel(buffer, nombreArchivo) {
       tipo: indice.tipo >= 0 ? String(fila[indice.tipo] ?? '').trim() : '',
       nominales: Number(fila[indice.nominales]) || 0,
       tenencia: indice.tenencia >= 0 ? Number(fila[indice.tenencia]) || 0 : 0,
+      asesor: indice.asesor >= 0 ? String(fila[indice.asesor] ?? '').trim() : '',
       original
     });
   }
@@ -82,6 +87,115 @@ function leerExcel(buffer, nombreArchivo) {
   if (registros.length === 0) throw new Error('El Excel no tiene filas con ticker.');
 
   return { archivo: nombreArchivo, fechaCarga: new Date().toISOString(), filas: registros };
+}
+
+// ── Asesor ──
+// Los Excel pueden traer clientes de uno o varios asesores; se muestran sólo los del asesor elegido.
+
+function asesorDe(r) {
+  return r.asesor ?? String(r.original?.Asesor ?? '').trim();
+}
+
+function asesoresDisponibles() {
+  if (!datos) return [];
+  const conteo = new Map();
+  for (const r of datos.filas) {
+    const a = asesorDe(r);
+    if (!a) continue;
+    if (!conteo.has(a)) conteo.set(a, new Set());
+    conteo.get(a).add(r.comitente);
+  }
+  return [...conteo.entries()]
+    .map(([nombre, comitentes]) => ({ nombre, clientes: comitentes.size }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+}
+
+function filasVisibles() {
+  if (!datos) return [];
+  if (!config.asesor || config.asesor === TODOS) return datos.filas;
+  return datos.filas.filter(r => asesorDe(r) === config.asesor);
+}
+
+// Hay que preguntar si nunca se eligió o si el asesor guardado no está en la carga actual
+function hayQuePedirAsesor() {
+  if (!datos) return false;
+  if (config.asesor === TODOS) return false;
+  return !config.asesor || !asesoresDisponibles().some(a => a.nombre === config.asesor);
+}
+
+async function elegirAsesor(asesor) {
+  config.asesor = asesor;
+  await Storage.guardarConfig(config);
+  tickerActual = null;
+  clienteActual = null;
+  $('dialogo-asesor').close();
+  cerrarMenuAsesor();
+  render();
+}
+
+// Lista de asesores con buscador: "Todos" va fijo arriba y después los asesores que coinciden
+function botonesAsesores(contenedor, filtro = '') {
+  contenedor.innerHTML = '';
+  const buscado = normalizar(filtro);
+  const total = new Set(datos.filas.map(r => r.comitente)).size;
+  const coinciden = asesoresDisponibles().filter(a => !buscado || normalizar(a.nombre).includes(buscado));
+  const opciones = [{ nombre: TODOS, clientes: total }, ...coinciden];
+  for (const a of opciones) {
+    const li = document.createElement('li');
+    if (a.nombre === TODOS) li.className = 'opcion-todos';
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'opcion-asesor' + (a.nombre === config.asesor ? ' elegido' : '');
+    boton.innerHTML = '<span></span><small></small>';
+    boton.querySelector('span').textContent = a.nombre === TODOS ? 'Todos' : a.nombre;
+    boton.querySelector('small').textContent = a.clientes === 1 ? '1 cliente' : `${fmtEntero.format(a.clientes)} clientes`;
+    boton.addEventListener('click', () => elegirAsesor(a.nombre));
+    li.appendChild(boton);
+    contenedor.appendChild(li);
+  }
+  if (!coinciden.length) {
+    const li = document.createElement('li');
+    li.className = 'sin-asesores';
+    li.textContent = 'Ningún asesor coincide con la búsqueda';
+    contenedor.appendChild(li);
+  }
+}
+
+// Enter en el buscador elige el primer asesor que coincide (o "Todos" si el buscador está vacío)
+function elegirPrimero(contenedor, filtro) {
+  const botones = contenedor.querySelectorAll('.opcion-asesor');
+  const boton = filtro.trim() ? botones[1] : botones[0];
+  if (boton) boton.click();
+}
+
+function pedirAsesor() {
+  $('buscar-asesor-dialogo').value = '';
+  botonesAsesores($('lista-asesores'));
+  if (!$('dialogo-asesor').open) $('dialogo-asesor').showModal();
+  $('buscar-asesor-dialogo').focus();
+}
+
+function renderAsesor() {
+  const menu = $('asesor-menu');
+  menu.hidden = !datos || !config.asesor;
+  if (menu.hidden) return;
+  $('asesor-nombre').textContent = config.asesor === TODOS ? 'Todos' : config.asesor;
+  $('btn-asesor').title = `Asesor: ${$('asesor-nombre').textContent}`;
+}
+
+function abrirMenuAsesor() {
+  $('buscar-asesor-menu').value = '';
+  botonesAsesores($('asesor-lista-menu'));
+  $('asesor-opciones').hidden = false;
+  $('btn-asesor').setAttribute('aria-expanded', 'true');
+  $('buscar-asesor-menu').focus();
+  const elegido = $('asesor-lista-menu').querySelector('.elegido');
+  if (elegido) elegido.scrollIntoView({ block: 'nearest' });
+}
+
+function cerrarMenuAsesor() {
+  $('asesor-opciones').hidden = true;
+  $('btn-asesor').setAttribute('aria-expanded', 'false');
 }
 
 // ── Historial de cargas ──
@@ -118,6 +232,10 @@ async function borrarCarga(id) {
   usarUltimaCarga();
   render();
   renderCargas();
+  if (hayQuePedirAsesor()) {
+    $('dialogo-cargas').close();
+    pedirAsesor();
+  }
 }
 
 async function cargarArchivo(file) {
@@ -131,6 +249,7 @@ async function cargarArchivo(file) {
     usarUltimaCarga();
     render();
     renderCargas();
+    if (hayQuePedirAsesor()) pedirAsesor();
   } catch (err) {
     console.error(err);
     const msg = 'No se pudo cargar el archivo: ' + err.message;
@@ -143,7 +262,7 @@ async function cargarArchivo(file) {
 
 function resumenTickers() {
   const mapa = new Map();
-  for (const r of datos.filas) {
+  for (const r of filasVisibles()) {
     let t = mapa.get(r.ticker);
     if (!t) {
       t = { ticker: r.ticker, instrumento: r.instrumento, tipo: r.tipo, comitentes: new Set(), aum: 0 };
@@ -169,7 +288,7 @@ function tenenciaDe(r) {
 // Un cliente puede tener el mismo ticker en más de una fila: se suman sus nominales
 function clientesDeTicker(ticker) {
   const mapa = new Map();
-  for (const r of datos.filas) {
+  for (const r of filasVisibles()) {
     if (r.ticker !== ticker) continue;
     const tenencia = tenenciaDe(r);
     const c = mapa.get(r.comitente);
@@ -186,7 +305,7 @@ function clientesDeTicker(ticker) {
 // Clientes con su AUM (suma de la tenencia de todas sus posiciones, incluidos los saldos)
 function resumenClientes() {
   const mapa = new Map();
-  for (const r of datos.filas) {
+  for (const r of filasVisibles()) {
     let c = mapa.get(r.comitente);
     if (!c) {
       c = { comitente: r.comitente, cuenta: r.cuenta, aum: 0, tickers: new Set(), perfil: r.original?.['Perfil de Inversor'] || '' };
@@ -201,7 +320,7 @@ function resumenClientes() {
 // Posiciones de un cliente, sumando las filas repetidas del mismo ticker
 function posicionesDeCliente(comitente) {
   const mapa = new Map();
-  for (const r of datos.filas) {
+  for (const r of filasVisibles()) {
     if (r.comitente !== comitente) continue;
     const p = mapa.get(r.ticker);
     if (p) {
@@ -222,9 +341,14 @@ function render() {
   $('vista-datos').hidden = !hayDatos;
   $('cli-vacia').hidden = hayDatos;
   $('cli-datos').hidden = !hayDatos;
-  $('estado').textContent = hayDatos
+  const estado = hayDatos
     ? `${datos.archivo} · cargado ${fmtFecha.format(new Date(datos.fechaCarga))} · ${datos.filas.length} ${datos.filas.length === 1 ? 'fila' : 'filas'}`
     : 'Sin datos cargados';
+  for (const id of ['estado', 'cli-estado']) {
+    $(id).textContent = estado;
+    $(id).title = estado;
+  }
+  renderAsesor();
   if (!hayDatos) return;
   renderTickers();
   renderDetalle();
@@ -343,7 +467,7 @@ function renderDetalle() {
   $('detalle').hidden = clientes.length === 0;
   if (!clientes.length) return;
 
-  const info = datos.filas.find(r => r.ticker === tickerActual);
+  const info = filasVisibles().find(r => r.ticker === tickerActual);
   $('det-ticker').textContent = tickerActual;
   $('det-instrumento').textContent = [info.instrumento, info.tipo].filter(Boolean).join(' · ');
   $('det-clientes').textContent = clientes.length;
@@ -516,6 +640,29 @@ function initEventos() {
   $('btn-cargar').addEventListener('click', () => input.click());
   $('btn-borrar-datos').addEventListener('click', abrirCargas);
   $('cerrar-cargas').addEventListener('click', () => $('dialogo-cargas').close());
+  // El asesor es obligatorio la primera vez: la ventana no se cierra con Escape
+  $('dialogo-asesor').addEventListener('cancel', e => e.preventDefault());
+  for (const [input, lista] of [['buscar-asesor-dialogo', 'lista-asesores'], ['buscar-asesor-menu', 'asesor-lista-menu']]) {
+    $(input).addEventListener('input', () => botonesAsesores($(lista), $(input).value));
+    $(input).addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        elegirPrimero($(lista), $(input).value);
+      }
+    });
+  }
+  $('btn-asesor').addEventListener('click', e => {
+    e.stopPropagation();
+    if ($('asesor-opciones').hidden) abrirMenuAsesor();
+    else cerrarMenuAsesor();
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#asesor-menu')) cerrarMenuAsesor();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') cerrarMenuAsesor();
+  });
+
   $('dialogo-cargas').addEventListener('click', e => {
     if (e.target === $('dialogo-cargas')) $('dialogo-cargas').close();
   });
@@ -574,8 +721,10 @@ async function iniciar() {
   }
   initEventos();
   cargas = leerHistorial(await Storage.leer());
+  config = await Storage.leerConfig();
   usarUltimaCarga();
   render();
+  if (hayQuePedirAsesor()) pedirAsesor();
 }
 
 iniciar();

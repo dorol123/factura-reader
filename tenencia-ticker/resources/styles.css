@@ -43,8 +43,8 @@ body {
 .topbar {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 0 24px;
+  gap: 16px;
+  padding: 0 20px;
   height: 60px;
   background: var(--marca);
   color: #fff;
@@ -81,6 +81,7 @@ body {
 }
 
 .secciones {
+  flex: none;
   display: flex;
   align-self: stretch;
   gap: 4px;
@@ -89,7 +90,8 @@ body {
 
 .seccion-tab {
   position: relative;
-  padding: 0 14px;
+  white-space: nowrap;
+  padding: 0 12px;
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.72);
@@ -105,8 +107,8 @@ body {
 .seccion-tab.activa::after {
   content: '';
   position: absolute;
-  left: 14px;
-  right: 14px;
+  left: 12px;
+  right: 12px;
   bottom: 0;
   height: 3px;
   border-radius: 3px 3px 0 0;
@@ -118,14 +120,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 20px;
+  gap: 12px;
   min-width: 0;
+  margin-left: 24px;
 }
 
+/* Archivo y fecha de la carga en uso, al pie de la lista */
 .estado {
-  min-width: 0;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--borde);
+  color: var(--tenue);
+  font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -829,3 +834,142 @@ body {
 .btn-cancelar:hover { color: var(--texto); }
 
 .cargas-vacio { padding: 28px 22px; color: var(--tenue); text-align: center; }
+
+/* ── Asesor: selector arriba a la derecha y ventana "Seleccione asesor" ── */
+
+.asesor-menu {
+  position: relative;
+  flex: none;
+  margin-left: auto;
+}
+
+.acciones-tenencia:not([hidden]) + .asesor-menu { margin-left: 12px; }
+
+.btn-asesor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 240px;
+  padding: 6px 10px 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-asesor:hover, .btn-asesor[aria-expanded="true"] { background: rgba(255, 255, 255, 0.18); }
+
+.asesor-etq {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.asesor-nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.asesor-flecha {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.15s;
+}
+
+.btn-asesor[aria-expanded="true"] .asesor-flecha { transform: rotate(180deg); }
+
+.asesor-opciones {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  max-height: min(440px, calc(100vh - 90px));
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(10, 47, 107, 0.18);
+}
+
+.asesor-opciones[hidden] { display: none; }
+
+.buscar-asesor {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--texto);
+  font: inherit;
+}
+
+.buscar-asesor:focus { outline: 2px solid var(--marca); border-color: transparent; }
+
+.asesor-opciones .buscar-asesor { width: auto; margin: 8px 8px 4px; }
+
+.lista-opciones-asesor {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.asesor-opciones .lista-opciones-asesor { padding: 4px 6px 6px; }
+
+.dialogo-buscar { padding: 14px 22px 4px; }
+
+.lista-asesores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 22px 22px;
+}
+
+.opcion-asesor {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 9px 12px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--texto);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.opcion-asesor span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lista-asesores .opcion-asesor { border-color: var(--borde); }
+.opcion-asesor:hover { background: var(--marca-suave); border-color: var(--marca-linea); }
+.opcion-asesor small { flex: none; color: var(--tenue); font-size: 12px; font-weight: 500; }
+.opcion-asesor.elegido { color: var(--marca); background: var(--marca-suave); }
+.opcion-asesor.elegido span::before { content: '✓ '; }
+
+.sin-asesores { padding: 12px; color: var(--tenue); font-size: 13px; text-align: center; }
+
+/* "Todos" fijo arriba, separado del resto */
+.opcion-todos {
+  margin-bottom: 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--borde);
+}

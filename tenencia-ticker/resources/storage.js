@@ -51,5 +51,30 @@ const Storage = (() => {
     else localStorage.setItem(CLAVE, texto);
   }
 
-  return { esApp, leer, guardar };
+  // Configuración del usuario (por ejemplo, el asesor elegido): %APPDATA%\Valiu\config.json
+  const CLAVE_CONFIG = 'valiu-config';
+
+  async function leerConfig() {
+    if (!esApp) {
+      try {
+        return JSON.parse(localStorage.getItem(CLAVE_CONFIG)) || {};
+      } catch (err) {
+        return {};
+      }
+    }
+    await rutaArchivo();
+    return (await leerArchivo(`${carpeta}/config.json`)) || {};
+  }
+
+  async function guardarConfig(config) {
+    const texto = JSON.stringify(config);
+    if (esApp) {
+      await rutaArchivo();
+      await Neutralino.filesystem.writeFile(`${carpeta}/config.json`, texto);
+    } else {
+      try { localStorage.setItem(CLAVE_CONFIG, texto); } catch (err) { /* sin almacenamiento */ }
+    }
+  }
+
+  return { esApp, leer, guardar, leerConfig, guardarConfig };
 })();

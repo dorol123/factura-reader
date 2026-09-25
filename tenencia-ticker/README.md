@@ -21,6 +21,11 @@ App de escritorio portable para Windows con dos secciones:
 3. Elegí un ticker de la lista (se puede buscar por ticker o nombre del instrumento).
 4. Hacé clic en los encabezados de la tabla para ordenar.
 
+**Asesor:** después de la primera carga, Valiu pide *Seleccione asesor* (con buscador; la lista sale de la columna
+"Asesor" del Excel, más la opción *Todos*). Las dos secciones de tenencia muestran sólo los clientes de ese asesor.
+La elección queda guardada en `%APPDATA%\Valiu\config.json` y se cambia desde arriba a la derecha. Si un Excel nuevo no
+trae al asesor guardado, vuelve a preguntar.
+
 Acreditaciones: cargá el Excel, elegí el rango (o un atajo: 10 a 13, 13 a 16, 16 del día hábil anterior a 10),
 revisá la vista previa y usá *Copiar imagen* o *Descargar Excel procesado*. Estos archivos no se guardan en la app.
 
