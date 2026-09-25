@@ -132,6 +132,8 @@ body {
 }
 
 .btn {
+  flex: none;
+  white-space: nowrap;
   background: #fff;
   color: var(--marca);
   border: none;
@@ -619,3 +621,27 @@ body {
 .tabla-cliente td:nth-child(4) { font-weight: 600; }
 .tabla-tenencia th.sin-orden { cursor: default; }
 .tabla-tenencia th.sin-orden:hover { color: var(--tenue); }
+
+/* ── Enlace a la fuente de datos (Power BI) ── */
+
+.link-datos {
+  flex: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.link-datos:hover { text-decoration-color: #fff; }
+
+.link-datos-vacio {
+  margin-top: 16px;
+  color: var(--marca);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+.link-datos-vacio::after, .link-datos::after { content: ' ↗'; font-size: 0.9em; }

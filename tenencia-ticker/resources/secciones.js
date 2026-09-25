@@ -24,4 +24,12 @@
   let inicial = 'tenencia';
   try { inicial = localStorage.getItem(CLAVE) || inicial; } catch (err) { /* sin almacenamiento */ }
   mostrar(document.getElementById(`seccion-${inicial}`) ? inicial : 'tenencia');
+
+  // Enlaces externos (Power BI, etc.): en la app de escritorio se abren en el navegador de Windows
+  document.addEventListener('click', e => {
+    const enlace = e.target.closest('a[data-externo]');
+    if (!enlace || typeof window.NL_OS === 'undefined') return;
+    e.preventDefault();
+    Neutralino.os.open(enlace.href);
+  });
 })();

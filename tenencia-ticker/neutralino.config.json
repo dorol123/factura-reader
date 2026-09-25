@@ -17,6 +17,7 @@
     "app.*",
     "os.getPath",
     "os.showSaveDialog",
+    "os.open",
     "filesystem.*"
   ],
   "globalVariables": {},
