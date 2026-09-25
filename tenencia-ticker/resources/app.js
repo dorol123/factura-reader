@@ -231,7 +231,10 @@ function renderDetalleCliente() {
 
   const cliente = resumenClientes().find(c => c.comitente === clienteActual);
   $('cli-nombre').textContent = cliente.cuenta;
-  $('cli-sub').textContent = [`Comitente ${cliente.comitente}`, cliente.perfil && `Perfil ${cliente.perfil}`].filter(Boolean).join(' · ');
+  const sub = $('cli-sub');
+  sub.innerHTML = '';
+  sub.append('Comitente ', cliente.comitente, botonCopiar(cliente.comitente));
+  if (cliente.perfil) sub.append(` · Perfil ${cliente.perfil}`);
   $('cli-tickers').textContent = posiciones.length;
   $('cli-aum').textContent = 'USD ' + fmtUsd.format(cliente.aum);
 
@@ -322,7 +325,10 @@ function renderDetalle() {
   for (const c of clientes) {
     const tr = document.createElement('tr');
     tr.appendChild(celdaEnlace(c.cuenta, `Ver la tenencia de ${c.cuenta}`, () => irACliente(c.comitente)));
-    for (const [valor, clase] of [[c.comitente, ''], [fmtNum.format(c.nominales), 'num'], [fmtUsd.format(c.tenencia), 'num']]) {
+    const tdComitente = document.createElement('td');
+    tdComitente.append(c.comitente, botonCopiar(c.comitente));
+    tr.appendChild(tdComitente);
+    for (const [valor, clase] of [[fmtNum.format(c.nominales), 'num'], [fmtUsd.format(c.tenencia), 'num']]) {
       const td = document.createElement('td');
       td.textContent = valor;
       if (clase) td.className = clase;
@@ -335,6 +341,48 @@ function renderDetalle() {
     th.classList.toggle('orden-asc', th.dataset.orden === campo && !desc);
     th.classList.toggle('orden-desc', th.dataset.orden === campo && desc);
   });
+}
+
+// ── Copiar comitente ──
+
+const ICONO_COPIAR = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5"/><path d="M3.5 10.5h-.5A1.5 1.5 0 0 1 1.5 9V3A1.5 1.5 0 0 1 3 1.5h6A1.5 1.5 0 0 1 10.5 3v.5"/></svg>';
+const ICONO_OK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>';
+
+async function copiarTexto(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+  } catch (err) {
+    // En la app de escritorio, si el navegador no deja, se usa el portapapeles de Windows
+    if (Storage.esApp) await Neutralino.clipboard.writeText(texto);
+    else throw err;
+  }
+}
+
+function botonCopiar(texto) {
+  const boton = document.createElement('button');
+  boton.type = 'button';
+  boton.className = 'btn-copiar';
+  boton.title = `Copiar ${texto}`;
+  boton.setAttribute('aria-label', `Copiar comitente ${texto}`);
+  boton.innerHTML = ICONO_COPIAR;
+  boton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      await copiarTexto(texto);
+      boton.innerHTML = ICONO_OK;
+      boton.classList.add('copiado');
+      boton.title = 'Copiado';
+    } catch (err) {
+      boton.title = 'No se pudo copiar';
+    }
+    clearTimeout(boton._timer);
+    boton._timer = setTimeout(() => {
+      boton.innerHTML = ICONO_COPIAR;
+      boton.classList.remove('copiado');
+      boton.title = `Copiar ${texto}`;
+    }, 1500);
+  });
+  return boton;
 }
 
 // ── Navegación entre ticker y cliente ──
