@@ -17,6 +17,9 @@
     try { localStorage.setItem(CLAVE, seccion); } catch (err) { /* sin almacenamiento */ }
   }
 
+  // Para que otras secciones puedan navegar (por ejemplo, de un cliente a un ticker)
+  window.mostrarSeccion = mostrar;
+
   document.querySelectorAll('.seccion-tab').forEach(tab => {
     tab.addEventListener('click', () => mostrar(tab.dataset.seccion));
   });

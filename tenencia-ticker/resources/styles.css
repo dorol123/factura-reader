@@ -645,3 +645,32 @@ body {
 }
 
 .link-datos-vacio::after, .link-datos::after { content: ' ↗'; font-size: 0.9em; }
+
+/* ── Enlaces dentro de las tablas (cliente ↔ ticker) ── */
+
+.enlace-celda {
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: color 0.1s, text-decoration-color 0.1s;
+}
+
+.enlace-celda:hover, .enlace-celda:focus-visible {
+  color: var(--marca);
+  text-decoration-color: currentColor;
+}
+
+.enlace-celda::after {
+  content: ' →';
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.enlace-celda:hover::after, .enlace-celda:focus-visible::after { opacity: 0.7; }

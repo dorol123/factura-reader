@@ -249,8 +249,9 @@ function renderDetalleCliente() {
   for (const p of posiciones) {
     const tr = document.createElement('tr');
     const pct = cliente.aum ? p.tenencia / cliente.aum : 0;
+    tr.appendChild(celdaEnlace(p.ticker, `Ver todos los clientes con ${p.ticker}`, () => irATicker(p.ticker), 'c-ticker'));
     for (const [valor, clase] of [
-      [p.ticker, 'c-ticker'], [p.instrumento, ''], [fmtNum.format(p.nominales), 'num'],
+      [p.instrumento, ''], [fmtNum.format(p.nominales), 'num'],
       [fmtUsd.format(p.tenencia), 'num'], [fmtPct.format(pct), 'num c-pct']
     ]) {
       const td = document.createElement('td');
@@ -320,7 +321,8 @@ function renderDetalle() {
   body.innerHTML = '';
   for (const c of clientes) {
     const tr = document.createElement('tr');
-    for (const [valor, clase] of [[c.cuenta, ''], [c.comitente, ''], [fmtNum.format(c.nominales), 'num'], [fmtUsd.format(c.tenencia), 'num']]) {
+    tr.appendChild(celdaEnlace(c.cuenta, `Ver la tenencia de ${c.cuenta}`, () => irACliente(c.comitente)));
+    for (const [valor, clase] of [[c.comitente, ''], [fmtNum.format(c.nominales), 'num'], [fmtUsd.format(c.tenencia), 'num']]) {
       const td = document.createElement('td');
       td.textContent = valor;
       if (clase) td.className = clase;
@@ -333,6 +335,44 @@ function renderDetalle() {
     th.classList.toggle('orden-asc', th.dataset.orden === campo && !desc);
     th.classList.toggle('orden-desc', th.dataset.orden === campo && desc);
   });
+}
+
+// ── Navegación entre ticker y cliente ──
+
+function celdaEnlace(texto, titulo, alHacerClic, clase) {
+  const td = document.createElement('td');
+  if (clase) td.className = clase;
+  const boton = document.createElement('button');
+  boton.type = 'button';
+  boton.className = 'enlace-celda';
+  boton.textContent = texto;
+  boton.title = titulo;
+  boton.addEventListener('click', alHacerClic);
+  td.appendChild(boton);
+  return td;
+}
+
+function mostrarSeleccionado(listaId) {
+  const activo = document.querySelector(`#${listaId} li.activo`);
+  if (activo) activo.scrollIntoView({ block: 'center' });
+}
+
+function irATicker(ticker) {
+  tickerActual = ticker;
+  $('buscar-ticker').value = '';
+  renderTickers();
+  renderDetalle();
+  window.mostrarSeccion('tenencia');
+  mostrarSeleccionado('lista-tickers');
+}
+
+function irACliente(comitente) {
+  clienteActual = comitente;
+  $('buscar-cliente').value = '';
+  renderClientes();
+  renderDetalleCliente();
+  window.mostrarSeccion('clientes');
+  mostrarSeleccionado('lista-clientes');
 }
 
 // ── Eventos ──
